@@ -10,8 +10,8 @@ This Tool is to export your AWS Organizations structure to Json file  and import
 **Author:** *David Krohn* - [Linkedin](https://www.linkedin.com/in/daknhh/) - [Blog](https://globaldatanet.com/blog/author/david-krohn)
 
 ## Usage
-Export: `orgtool.py -u export -f <file.json> -p AWSPROFILE `
-Import: `orgtool.py -u import -f <file.json> -p AWSPROFILE `
+- Export: `orgtool.py -u export -f <file.json> -p AWSPROFILE `
+- Import: `orgtool.py -u import -f <file.json> -p AWSPROFILE `
 
 ### How to use the tool with virtual env:
 
