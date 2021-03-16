@@ -7,6 +7,67 @@ FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO, filename='orgtool.log')
 logger = logging.getLogger('oustructure')
 
+def export_policies(file,profile):
+    session = boto3.Session(profile_name=profile)
+    org = session.client('organizations')
+    response = org.list_policies(
+    Filter='SERVICE_CONTROL_POLICY'
+    )
+    logger.info(f'Inititalize Dict for SCPs')
+    policies = {}
+
+    for scp in response['Policies']:
+        contentfile = f"scps/{scp['Name']}.json"
+        
+        responsepolicy = org.describe_policy(
+            PolicyId=scp['Id']
+            )
+        content = responsepolicy['Policy']['Content']
+        scpcontent = open(contentfile, "w")
+        json.dump(content, scpcontent, indent = 6)
+        scpcontent.close()
+        logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
+        print(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
+        policies.setdefault('Scps', []).append({'Id': scp['Id'],'Name': scp['Name'],'Description': scp['Description'],'ContentFile':contentfile})
+        logger.info(f'Add SCP {scp} to policies Dict.')
+        print(f"Add SCP {scp['Name']} to policies Dict.")
+    out_file = open(file, "w") 
+    json.dump(policies, out_file, indent = 6) 
+    out_file.close()
+    logger.info(f'Created SCPs File: {file}.')
+    print("\n************************")
+    print(f'SCPs have been written to File: {file} 🗃.')
+
+def import_policies(file,profile):
+    session = boto3.Session(profile_name=profile)
+    org = session.client('organizations')
+    logger.info(f'Import Json file: {file}')    
+    f = open(file,)
+    data = json.load(f) 
+    print("\n************************")
+    print("\nImport-SCPs:")
+
+    for scp in data['Scps']:
+        print(f"- {scp['Name']}")
+        f = open(scp['ContentFile'],)
+        print(f"  - Import Json file: {scp['ContentFile']}.")
+        logger.info(f"Import Json file: {scp['ContentFile']}.")  
+        data = json.load(f)
+        try:
+            response = org.create_policy(
+            Content=data,
+            Description=scp['Description'],
+            Name=scp['Name'],
+            Type='SERVICE_CONTROL_POLICY'
+            )
+            logger.info(f"Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.") 
+            print(f"✅ Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n") 
+        except org.exceptions.DuplicatePolicyException:
+            logger.info(f"SCP with Name: {scp['Name']} - already exist.") 
+            print(f"ℹ SCP with Name: {scp['Name']} - already exist. \n\n") 
+    print("\n************************")
+    print(f'✅ SCPs have been imported.')
+
 def get_ou_stucture(parent_id,profile):
     session = boto3.Session(profile_name=profile)
     org = session.client('organizations')
@@ -279,13 +340,16 @@ def main(argv):
     except getopt.GetoptError:
         print('Usage:')
         print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
+        print('Export SCPs: orgtool.py -u export-scps -p AWSPROFILE')
         print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
             print('Usage:')
             print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
+            print('Export SCPs: orgtool.py -u export-scps -f <file.json> -p AWSPROFILE')
             print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
+            print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
             sys.exit()
         elif opt in ("-u", "--usage"):
             print(f'Current usage: {arg}')
@@ -307,7 +371,14 @@ def main(argv):
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Import OUs from Json')
         import_structure(file,profile)
-
+    elif usage == 'export-scps':
+        logger.info('---------------------------------------------------')
+        logger.info('NEW REQUEST: Export Scps to Json')
+        export_policies(file,profile)
+    elif usage == 'import-scps':
+        logger.info('---------------------------------------------------')
+        logger.info('NEW REQUEST: Import Scps from Json')
+        import_policies(file,profile)
     print('ℹ️: logs can be found in orgtool.log')
 
 if __name__ == "__main__":
