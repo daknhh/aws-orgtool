@@ -342,6 +342,7 @@ def main(argv):
         print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
         print('Export SCPs: orgtool.py -u export-scps -p AWSPROFILE')
         print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
+        print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
