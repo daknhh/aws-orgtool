@@ -14,9 +14,13 @@ This Tool is to export your AWS Organizations structure, SCPs to Json file and i
 
 
 ## Usage
+
+Structure:
 - Export: `orgtool.py -u export -f <file.json> -p AWSPROFILE `
 - Import: `orgtool.py -u import -f <file.json> -p AWSPROFILE `
-
+SCPs:
+- Export: `orgtool.py -u export-scps -f <file.json> -p AWSPROFILE`
+- Import: `orgtool.py -u import-scps -f <file.json> -p AWSPROFILE`
 ### How to use the tool with virtual env:
 
 1. Creating virtual env: 
