@@ -3,7 +3,9 @@
 * [Usage](#usage)
 
 ## General info
-This Tool is to export your AWS Organizations structure to Json file  and import structure to another AWS Organization. During import and export a a log file is written so that the processes can be traced
+This Tool is to export your AWS Organizations structure, SCPs to Json file and import structure, SCPs to another AWS Organization. During import and export a a log file is written so that the processes can be traced
+
+![Example](static/orgtoolicon.jpeg)
 
 ## Tool info:
 |Version |Author  | 
