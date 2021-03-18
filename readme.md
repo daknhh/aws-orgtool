@@ -16,13 +16,16 @@ This Tool is to export your AWS Organizations structure, SCPs to Json file and i
 ## Usage
 
 ### Structure:
-- Export: `orgtool.py -u export -f <file.json> -p AWSPROFILE `
-- Import: `orgtool.py -u import -f <file.json> -p AWSPROFILE `
+#### Export: `orgtool.py -u export -f <file.json> -p AWSPROFILE `
+
+#### Import: `orgtool.py -u import -f <file.json> -p AWSPROFILE `
 ### SCPs:
-- Export: `orgtool.py -u export-scps -f <file.json> -p AWSPROFILE`
-- Import: `orgtool.py -u import-scps -f <file.json> -p AWSPROFILE`
-- Validate-SCPs: `orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE` ℹ️ - 
-Uses Access Analyzer policy validation to validates your SCPs against IAM [policy grammar](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html) and [best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html). 
+#### Export: `orgtool.py -u export-scps -f <file.json> -p AWSPROFILE`
+
+#### Import: `orgtool.py -u import-scps -f <file.json> -p AWSPROFILE`
+
+#### Validate-SCPs: `orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE` 
+ℹ️ Uses Access Analyzer policy validation to validates your SCPs against IAM [policy grammar](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html) and [best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html). 
 ### How to use the tool with virtual env:
 
 1. Creating virtual env: 
