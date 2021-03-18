@@ -2,6 +2,7 @@ import boto3
 import json
 import logging
 import sys, getopt
+import webbrowser
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO, filename='orgtool.log')
@@ -68,6 +69,42 @@ def import_policies(file,profile):
     print("\n************************")
     print(f'✅ SCPs have been imported.')
 
+def validate_policies(file,profile):
+    session = boto3.Session(profile_name=profile,region_name='us-east-1')
+    accessanalyzer = session.client('accessanalyzer')
+    logger.info(f'Load Json file: {file}')    
+    f = open(file,)
+    data = json.load(f) 
+    print("\n************************")
+    print("Validate Policies \n")
+
+    for scp in data['Scps']:
+        print(f"\n------------------------------------------")
+        print(f"🔍 Findings for: \n{scp['Name']} SCP \n\n")
+        logger.info(f"Validate SCP with Name: {scp['Name']}") 
+        response = accessanalyzer.validate_policy(
+        locale='EN',
+        policyDocument=scp['ContentFile'],
+        policyType='SERVICE_CONTROL_POLICY'
+        )
+        for finding in response['findings']:
+            if finding['findingDetails'] == 'Fix the JSON syntax error at index 0 line 1 column 0.':
+                break
+            else: 
+                if finding['findingType'] == 'ERROR':
+                    findingtype = '❗️'
+                if finding['findingType'] == 'SECURITY_WARNING':
+                    findingtype = '🚨'
+                if finding['findingType'] == 'WARNING':
+                    findingtype = '⚠️'
+                if finding['findingType'] == 'SUGGESTION':
+                    findingtype = '💡'
+                print(f"{findingtype}{finding['findingType']}")
+                print(f"Details: {finding['findingDetails']}")
+                print(f"Code: {finding['issueCode']}")
+                print(f"🔗 Learn more: \x1b]8;;{finding['learnMoreLink']}\aCtrl+Click here\x1b]8;;\a \n")
+                logger.info(f"Finding in {scp['Name']} - Type:{finding['findingType']} - Details:{finding['findingDetails']} - Code:{finding['issueCode']} - Learn more:{finding['learnMoreLink']}")
+                 
 def get_ou_stucture(parent_id,profile):
     session = boto3.Session(profile_name=profile)
     org = session.client('organizations')
@@ -343,6 +380,7 @@ def main(argv):
         print('Export SCPs: orgtool.py -u export-scps -p AWSPROFILE')
         print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
         print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
+        print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -351,6 +389,7 @@ def main(argv):
             print('Export SCPs: orgtool.py -u export-scps -f <file.json> -p AWSPROFILE')
             print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
             print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
+            print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
             sys.exit()
         elif opt in ("-u", "--usage"):
             print(f'Current usage: {arg}')
@@ -380,6 +419,10 @@ def main(argv):
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Import Scps from Json')
         import_policies(file,profile)
+    elif usage == 'validate-scps':
+        logger.info('---------------------------------------------------')
+        logger.info('NEW REQUEST: Validate Scps from Json')
+        validate_policies(file,profile)
     print('ℹ️: logs can be found in orgtool.log')
 
 if __name__ == "__main__":
