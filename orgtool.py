@@ -268,6 +268,147 @@ def get_scpforou(ou_id,profile):
             scp.setdefault('SCPs',[]).append({'Name': policy['Name']})    
     return scp
 
+def get_all_scps(profile):
+    session = boto3.Session(profile_name=profile)
+    org = session.client('organizations')
+    response = org.list_policies(
+    Filter='SERVICE_CONTROL_POLICY',
+    )
+    allscps = ""
+    for Scp in response['Policies']:
+        allscps += f"\"{Scp['Name']}\": \"{Scp['Id']}\","
+        #allscps.setdefault('SCPs', []).append({Scp['Name']: Scp['Id']})
+    allscps = allscps[:-1]
+    allscpsstring = "{" + allscps + "}" 
+    convertedDict = json.loads(allscpsstring)
+    return convertedDict
+
+def attach_policies(file,profile):
+    session = boto3.Session(profile_name=profile)
+    org = session.client('organizations')
+    scps_in_org = get_all_scps(profile)
+    logger.info(f'Import Json file: {file}')    
+    f = open(file,)
+    data = json.load(f) 
+    
+    root_id = org.list_roots()['Roots'][0]['Id']
+    print("\n************************")
+    print("\nAttach-SCPs:")
+    for firstlevel in data['Ous']: 
+        firstlevelname = firstlevel['Name']
+        firstlevelou_id = get_ou_id_by_name(firstlevelname,root_id,profile)
+        if(firstlevel['SCPs'] == []):
+            logger.info(f'No SCP to attach for: {firstlevelou_id} - {firstlevelname} in {root_id}')
+            print(f'\nℹ️ No SCPs for OU: {firstlevelname}.')         
+        else:
+            print(f'\nattaching SCPs to OU {firstlevelname}:') 
+            for scp in firstlevel['SCPs']:
+                policyid = scps_in_org.get(scp['Name'])                
+                try:
+                    response = org.attach_policy(
+                    PolicyId=policyid,
+                    TargetId=firstlevelou_id,
+                    )
+                    logger.info(f'Attached: {policyid} to {firstlevelou_id}')
+                    print(f"✅ {scp['Name']} - {policyid}")
+                except org.exceptions.DuplicatePolicyAttachmentException:
+                    logger.info(f'Already attached: {policyid} to {firstlevelou_id}')
+                    print(f"✅ {scp['Name']} - {policyid}")
+
+            if firstlevel['Children'] == 'No-Children':
+                logger.info(f'{firstlevelname} has no No-Children')        
+            else:
+                for secondlevel in firstlevel['Children']:
+                    secondlevelname = secondlevel['Name']
+                    secondlevelou_id = get_ou_id_by_name(secondlevelname,firstlevelou_id,profile)
+                    if(secondlevel['SCPs'] == []):
+                        logger.info(f'No SCP to attach for: {secondlevelou_id} - {secondlevelname} in {firstlevelou_id}')
+                        print(f'\nℹ️ No SCPs for OU: {secondlevelname}.')         
+                    else:
+                        print(f'\nattaching SCPs to OU {secondlevelname}:') 
+                        for scp in secondlevel['SCPs']:
+                            policyid = scps_in_org.get(scp['Name'])                
+                            try:
+                                response = org.attach_policy(
+                                PolicyId=policyid,
+                                TargetId=secondlevelou_id,
+                                )
+                                logger.info(f'Attached: {policyid} to {secondlevelou_id}')
+                                print(f"✅ {scp['Name']} - {policyid}")
+                            except org.exceptions.DuplicatePolicyAttachmentException:
+                                logger.info(f'Already attached: {policyid} to {secondlevelou_id}')
+                                print(f"✅ {scp['Name']} - {policyid}")        
+                        if secondlevel['Children'] == 'No-Children':
+                            logger.info(f'{secondlevelname} has no No-Children')
+                        else:
+                            for thirdlevel in secondlevel['Children']:
+                                thirdlevelname = thirdlevel['Name']
+                                thirdlevelou_id = get_ou_id_by_name(thirdlevelname,secondlevelou_id,profile)
+                                if(thirdlevel['SCPs'] == []):
+                                    logger.info(f'No SCPs to attach for: {thirdlevelou_id} - {thirdlevelname} in {secondlevelou_id}')
+                                    print(f'\nℹ️ No SCPs for OU: {thirdlevelname}.')         
+                                else:
+                                    print(f'\nattaching SCPs to OU {thirdlevelname}:') 
+                                    for scp in thirdlevel['SCPs']:
+                                        policyid = scps_in_org.get(scp['Name'])                
+                                        try:
+                                            response = org.attach_policy(
+                                            PolicyId=policyid,
+                                            TargetId=thirdlevelou_id,
+                                            )
+                                            logger.info(f'Attached: {policyid} to {thirdlevelou_id}')
+                                            print(f"✅ {scp['Name']} - {policyid}")
+                                        except org.exceptions.DuplicatePolicyAttachmentException:
+                                            logger.info(f'Already attached: {policyid} to {thirdlevelou_id}')
+                                            print(f"✅ {scp['Name']} - {policyid}")
+
+                                if thirdlevel['Children'] == 'No-Children':
+                                    logger.info(f'{thirdlevelname} has no No-Children')
+                                else:
+                                    for fourlevel in thirdlevel['Children']:
+                                        fourlevelname = thirdlevel['Name']
+                                        fourlevelou_id = get_ou_id_by_name(fourlevelname,thirdlevelou_id,profile)
+                                        if(fourlevel['SCPs'] == []):
+                                            logger.info(f'No SCPs to attach for: {fourlevelou_id} - {fourlevelname} in {thirdlevelou_id}')
+                                            print(f'\nℹ️ No SCPs for OU: {fourlevelname}.')         
+                                        else:
+                                            print(f'\nattaching SCPs to OU {fourlevelname}:') 
+                                            for scp in fourlevel['SCPs']:
+                                                policyid = scps_in_org.get(scp['Name'])                
+                                                try:
+                                                    response = org.attach_policy(
+                                                    PolicyId=policyid,
+                                                    TargetId=fourlevelou_id,
+                                                    )
+                                                    logger.info(f'Attached: {policyid} to {fourlevelou_id}')
+                                                    print(f"✅ {scp['Name']} - {policyid}")
+                                                except org.exceptions.DuplicatePolicyAttachmentException:
+                                                    logger.info(f'Already attached: {policyid} to {fourlevelou_id}')
+                                                    print(f"✅ {scp['Name']} - {policyid}")
+                                        if fourlevel['Children'] == 'No-Children':
+                                            logger.info(f'{fourlevelname} has no No-Children')
+                                        else:
+                                            for fivelevel in fourlevel['Children']:
+                                                fivelevelname = fivelevel['Name']
+                                                fivelevelou_id = get_ou_id_by_name(fivelevelname,fourlevelou_id,profile)
+                                                if(fivelevel['SCPs'] == []):
+                                                    logger.info(f'No SCPs to attach for: {fivelevelou_id} - {fivelevelname} in {fourlevelou_id}')
+                                                    print(f'\nℹ️ No SCPs for OU: {fivelevelname}.')         
+                                                else:
+                                                    print(f'\nattaching SCPs to OU {fourlevelname}:') 
+                                                    for scp in fivelevel['SCPs']:
+                                                        policyid = scps_in_org.get(scp['Name'])                
+                                                        try:
+                                                            response = org.attach_policy(
+                                                            PolicyId=policyid,
+                                                            TargetId=fivelevelou_id,
+                                                            )
+                                                            logger.info(f'Attached: {policyid} to {fivelevelou_id}')
+                                                            print(f"✅ {scp['Name']} - {policyid}")
+                                                        except org.exceptions.DuplicatePolicyAttachmentException:
+                                                            logger.info(f'Already attached: {policyid} to {fivelevelou_id}')
+                                                            print(f"✅ {scp['Name']} - {policyid}")
+
 def get_ou_id_by_name(name,parent_id,profile):
     session = boto3.Session(profile_name=profile)
     org = session.client('organizations')
@@ -295,7 +436,6 @@ def import_structure(file,profile):
     print("\n************************")
     print("\nOrganization-Structure: ")
     print(f'{root_id}')
-    
     for firstlevel in data['Ous']: 
         try:
             response = org.create_organizational_unit(
@@ -310,8 +450,7 @@ def import_structure(file,profile):
             logger.info('OU already exist')
             firstlevelname = firstlevel['Name']
             print(f' - {firstlevelname}')
-            firstlevelou_id = get_ou_id_by_name(firstlevel['Name'],root_id,profile)
-        
+            firstlevelou_id = get_ou_id_by_name(firstlevel['Name'],root_id,profile)  
         if firstlevel['Children'] == 'No-Children':
             logger.info(f'{firstlevelname} has no No-Children')
         else:
@@ -342,10 +481,10 @@ def import_structure(file,profile):
                             thirdlevellevelou_id = response3['OrganizationalUnit']['Id']
                             thirdlevelname = thirdlevel['Name']
                             logger.info(f'Created OU: {thirdlevelname} with Id: {thirdlevellevelou_id} {secondlevelname} in {secondlevelou_id}')
-                            print(f'- - - {thirdlevelname}')
+                            print(f' - - - {thirdlevelname}')
                         except (org.exceptions.DuplicateOrganizationalUnitException):
                             thirdlevelname = thirdlevel['Name']
-                            print(f'- - - {thirdlevelname}')
+                            print(f' - - - {thirdlevelname}')
                             thirdlevellevelou_id = get_ou_id_by_name(thirdlevel['Name'],secondlevelou_id,profile)
 
                         if thirdlevel['Children'] == 'No-Children':
@@ -360,10 +499,10 @@ def import_structure(file,profile):
                                     fourlevelou_id = response4['OrganizationalUnit']['Id']
                                     fourlevelname = fourlevel['Name']
                                     logger.info(f'Created OU: {fourlevelname} with Id: {fourlevelou_id} in {thirdlevellevelou_id}')
-                                    print(f'- - - - {fourlevelname}')
+                                    print(f' - - - - {fourlevelname}')
                                 except (org.exceptions.DuplicateOrganizationalUnitException):
                                     fourlevelname = fourlevel['Name']
-                                    print(f'- - - - {fourlevelname}')
+                                    print(f' - - - - {fourlevelname}')
                                     fourlevelou_id = get_ou_id_by_name(fourlevel['Name'],thirdlevellevelou_id,profile)
                             
                             if fourlevel['Children'] == 'No-Children':
@@ -378,10 +517,10 @@ def import_structure(file,profile):
                                         fivelevelou_id = response5['OrganizationalUnit']['Id']
                                         fivelevelname = fivelevel['Name']
                                         logger.info(f'Created OU: {fivelevelname} with Id: {fivelevelou_id} in {thirdlevellevelou_id}')
-                                        print(f'- - - - - {fivelevelname}')
+                                        print(f' - - - - - {fivelevelname}')
                                     except (org.exceptions.DuplicateOrganizationalUnitException):
                                         fivelevelname = fivelevel['Name']
-                                        print(f'- - - - - {fivelevelname}')
+                                        print(f' - - - - - {fivelevelname}')
                                         fivelevelou_id = get_ou_id_by_name(fivelevel['Name'],fourlevelou_id,profile)
 
     f.close() 
@@ -410,6 +549,7 @@ def main(argv):
             print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
             print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
             print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
+            print('Attach SCPs: orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE')
             sys.exit()
         elif opt in ("-u", "--usage"):
             print(f'Current usage: {arg}')
@@ -443,6 +583,10 @@ def main(argv):
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Validate Scps from Json')
         validate_policies(file,profile)
+    elif usage == 'attach-scps':
+        logger.info('---------------------------------------------------')
+        logger.info('NEW REQUEST: Validate Scps from Json')
+        attach_policies(file,profile)
     print('ℹ️: logs can be found in orgtool.log')
 
 if __name__ == "__main__":
