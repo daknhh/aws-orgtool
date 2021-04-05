@@ -24,6 +24,7 @@ This Tool is to export your AWS Organizations structure, SCPs to Json file and i
 
 #### Import: `orgtool.py -u import-scps -f <file.json> -p AWSPROFILE`
 
+#### Attach-SCPs: `orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE`
 #### Validate-SCPs: `orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE` 
 ℹ️ Uses Access Analyzer policy validation to validates your SCPs against IAM [policy grammar](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html) and [best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html). 
 ### How to use the tool with virtual env:
