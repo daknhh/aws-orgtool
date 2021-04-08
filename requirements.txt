@@ -3,3 +3,4 @@ json
 logging
 sys
 getopt
+graphviz
