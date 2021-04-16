@@ -4,6 +4,7 @@ import logging
 import sys, getopt
 import webbrowser
 from graphviz import Digraph
+import string
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO, filename='orgtool.log')
@@ -15,39 +16,40 @@ def visualize_organization(file,profile):
     logger.info(f'Import Json file: {file}')    
     f = open(file,)
     data = json.load(f)
-    dot = Digraph(comment='Organization')
+    dot = Digraph(comment='Organization',edge_attr={'arrowhead':'none'})
     root_id = org.list_roots()['Roots'][0]['Id']
-    dot.node('O', root_id)
+    dot.node('O', f"Organization: \n{root_id}")
     for firstlevel in data['Ous']:
-        dot.node(f"{firstlevel['Id']}", f"{firstlevel['Name']}") 
-        dot.edge('O', f"{firstlevel['Id']}", constraint='false',lhead='O')
+        dot.node(f"{firstlevel['Id']}", f"{firstlevel['Name']}",shape='box')
+        dot.edge(f"O",f"{firstlevel['Id']}")
         if firstlevel['Children'] == 'No-Children':
             logger.info(f"{firstlevel['Name']} has no No-Children")
         else:
             for secondlevel in firstlevel['Children']:
-                dot.node(f"{secondlevel['Id']}", f"{secondlevel['Name']}")
-                dot.edge(f"{firstlevel['Id']}",f"{secondlevel['Id']}", constraint='false')
+                dot.node(f"{secondlevel['Id']}", f"{secondlevel['Name']}",shape='box')
+                dot.edge(f"{firstlevel['Id']}",f"{secondlevel['Id']}")
                 if secondlevel['Children'] == 'No-Children':
                     logger.info(f"{secondlevel['Name']} has no No-Children")
                 else:
                     for thirdlevel in secondlevel['Children']:
-                        dot.node(f"{thirdlevel['Id']}", f"{thirdlevel['Name']}")
-                        dot.edge(f"{secondlevel['Id']}", f"{thirdlevel['Id']}", constraint='false')
+                        dot.node(f"{thirdlevel['Id']}", f"{thirdlevel['Name']}",shape='box')
+                        dot.edge(f"{secondlevel['Id']}", f"{thirdlevel['Id']}")
                         if thirdlevel['Children'] == 'No-Children':
                             logger.info(f"{thirdlevel['Name']} has no No-Children")
                         else:
                             for fourlevel in thirdlevel['Children']:
-                                dot.node(f"{fourlevel['Id']}", f"{fourlevel['Name']}")
-                                dot.edge(f"{fourlevel['Id']}", f"{thirdlevel['Id']}", constraint='false')
-                            if fourlevel['Children'] == 'No-Children':
-                                logger.info(f"{fourlevel['Name']} has no No-Children")
-                            else:
-                                for fivelevel in fourlevel['Children']:
-                                    dot.node(f"{fivelevel['Id']}", f"{fivelevel['Name']}")
-                                    dot.edge(f"{fourlevel['Id']}", f"{fivelevel['Id']}", constraint='false')
-    print(dot.source)
-    u = dot.unflatten(stagger=10)
-    u.render('organization.gv', view=True)  # doctest: +SKIP
+                                dot.node(f"{fourlevel['Id']}", f"{fourlevel['Name']}",shape='box')
+                                dot.edge(f"{fourlevel['Id']}", f"{thirdlevel['Id']}")
+                                if fourlevel['Children'] == 'No-Children':
+                                    logger.info(f"{fourlevel['Name']} has no No-Children")
+                                else:
+                                    for fivelevel in fourlevel['Children']:
+                                        logger.info(f"{fourlevel['Name']} has no No-Children")
+                                        dot.node(f"{fivelevel['Id']}", f"{fivelevel['Name']}",shape='box')
+                                        dot.edge(f"{fourlevel['Id']}", f"{fivelevel['Id']}")
+    dot.graph_attr['nodesep']='1.0'
+    #print(dot.source)
+    dot.render('organization.gv', view=True)
     f.close() 
     
     
