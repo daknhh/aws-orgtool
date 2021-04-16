@@ -3,10 +3,56 @@ import json
 import logging
 import sys, getopt
 import webbrowser
+from graphviz import Digraph
+import string
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO, filename='orgtool.log')
 logger = logging.getLogger('oustructure')
+
+def visualize_organization(file,profile):
+    session = boto3.Session(profile_name=profile)
+    org = session.client('organizations')
+    logger.info(f'Import Json file: {file}')    
+    f = open(file,)
+    data = json.load(f)
+    dot = Digraph(comment='Organization',edge_attr={'arrowhead':'none'})
+    root_id = org.list_roots()['Roots'][0]['Id']
+    dot.node('O', f"Organization: \n{root_id}")
+    for firstlevel in data['Ous']:
+        dot.node(f"{firstlevel['Id']}", f"{firstlevel['Name']}",shape='box')
+        dot.edge(f"O",f"{firstlevel['Id']}")
+        if firstlevel['Children'] == 'No-Children':
+            logger.info(f"{firstlevel['Name']} has no No-Children")
+        else:
+            for secondlevel in firstlevel['Children']:
+                dot.node(f"{secondlevel['Id']}", f"{secondlevel['Name']}",shape='box')
+                dot.edge(f"{firstlevel['Id']}",f"{secondlevel['Id']}")
+                if secondlevel['Children'] == 'No-Children':
+                    logger.info(f"{secondlevel['Name']} has no No-Children")
+                else:
+                    for thirdlevel in secondlevel['Children']:
+                        dot.node(f"{thirdlevel['Id']}", f"{thirdlevel['Name']}",shape='box')
+                        dot.edge(f"{secondlevel['Id']}", f"{thirdlevel['Id']}")
+                        if thirdlevel['Children'] == 'No-Children':
+                            logger.info(f"{thirdlevel['Name']} has no No-Children")
+                        else:
+                            for fourlevel in thirdlevel['Children']:
+                                dot.node(f"{fourlevel['Id']}", f"{fourlevel['Name']}",shape='box')
+                                dot.edge(f"{fourlevel['Id']}", f"{thirdlevel['Id']}")
+                                if fourlevel['Children'] == 'No-Children':
+                                    logger.info(f"{fourlevel['Name']} has no No-Children")
+                                else:
+                                    for fivelevel in fourlevel['Children']:
+                                        logger.info(f"{fourlevel['Name']} has no No-Children")
+                                        dot.node(f"{fivelevel['Id']}", f"{fivelevel['Name']}",shape='box')
+                                        dot.edge(f"{fourlevel['Id']}", f"{fivelevel['Id']}")
+    dot.graph_attr['nodesep']='1.0'
+    #print(dot.source)
+    dot.render('organization.gv', view=True)
+    f.close() 
+    
+    
 
 def export_policies(file,profile):
     session = boto3.Session(profile_name=profile)
@@ -540,6 +586,7 @@ def main(argv):
         print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
         print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
         print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
+        print('Visualize Organization: orgtool.py -u visualize-organization -f <file.json> -p AWSPROFILE')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -550,6 +597,7 @@ def main(argv):
             print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
             print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
             print('Attach SCPs: orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE')
+            print('Visualize Organization: orgtool.py -u visualize-organization -f <file.json> -p AWSPROFILE')
             sys.exit()
         elif opt in ("-u", "--usage"):
             print(f'Current usage: {arg}')
@@ -587,6 +635,10 @@ def main(argv):
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Validate Scps from Json')
         attach_policies(file,profile)
+    elif usage == 'visualize-organization':
+        logger.info('---------------------------------------------------')
+        logger.info('NEW REQUEST: visualize Organization from Json')
+        visualize_organization(file,profile)
     print('ℹ️: logs can be found in orgtool.log')
 
 if __name__ == "__main__":
