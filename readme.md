@@ -31,6 +31,11 @@ This Tool is to export your AWS Organizations structure, SCPs to Json file and i
 #### Visualize Organization: `orgtool.py -u visualize-organization -f <file.json> -p AWSPROFILE`
 
 ℹ️ Visualize Organization currently use [Graphviz](https://www.graphviz.org/download/) please install before using the function.
+
+
+![Example Output](static/visualize-organization-example.png)
+
+
 ### How to use the tool with virtual env:
 
 1. Creating virtual env: 
