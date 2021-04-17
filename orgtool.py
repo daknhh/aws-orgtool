@@ -95,7 +95,7 @@ def visualize_organization_diagrams(file,profile):
 ## The target column may contain a comma-separated list of values.
 ## Multiple connect entries are allowed.
 #
-# connect: {"from": "refs", "to": "id", "style": "curved=0;fontSize=11;"}
+# connect: {"from": "refs", "to": "id", "style": "edgeStyle=orthogonalEdgeStyle;html=1;endArrow=block;elbow=vertical;startArrow=none;endFill=1;strokeColor=#545B64;rounded=0;"}
 #
 ## Node x-coordinate. Possible value is a column name. Default is empty. Layouts will
 ## override this value.
@@ -149,7 +149,7 @@ def visualize_organization_diagrams(file,profile):
 #
 ## ---- CSV below this line. First line are column names."""
     root_id = org.list_roots()['Roots'][0]['Id']
-    csv += f"\nid,ou,scps,refs,image\n{root_id},'ManagementAccount',,https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
+    csv += f"\nid,ou,scps,refs,image\n{root_id},'ManagementAccount',,,https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
     for firstlevel in data['Ous']:
         scps = ""
         if(firstlevel['SCPs'] != []):
