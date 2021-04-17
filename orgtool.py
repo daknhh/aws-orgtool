@@ -31,7 +31,7 @@ def visualize_organization_diagrams(file,profile):
 ##
 #
 #
-# label: %ou%<br><i style="color:black;fontSize=8"></br> Attached SCPs: %scps% - </i><br>
+# label: %ou%<br><i style="color:black;fontSize=8"> %scps% </i><br>
 ## Node style (placeholders are replaced once).
 ## Default is the current style for nodes.
 #
@@ -152,40 +152,50 @@ def visualize_organization_diagrams(file,profile):
     csv += f"\nid,ou,scps,refs,image\n{root_id},'ManagementAccount',,https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
     for firstlevel in data['Ous']:
         scps = ""
-        for scp in firstlevel['SCPs']:
-            scps += f"{scp['Name']} "
+        if(firstlevel['SCPs'] != []):
+            scps += "Attached SCPs: "
+            for scp in firstlevel['SCPs']:
+                scps += f"{scp['Name']} "
         csv += f"\n{firstlevel['Id']},{firstlevel['Name']},{scps},{root_id},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
         if firstlevel['Children'] == 'No-Children':
             logger.info(f"{firstlevel['Name']} has no No-Children")
         else:
             for secondlevel in firstlevel['Children']:
                 scps = ""
-                for scp in secondlevel['SCPs']:
-                    scps += f"{scp['Name']} "
+                if(secondlevel['SCPs'] != []):
+                    scps += "Attached SCPs: "
+                    for scp in secondlevel['SCPs']:
+                        scps += f"{scp['Name']} "
                 csv += f"\n{secondlevel['Id']},{secondlevel['Name']},{scps},{firstlevel['Id']},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
                 if secondlevel['Children'] == 'No-Children':
                     logger.info(f"{secondlevel['Name']} has no No-Children")
                 else:
                     for thirdlevel in secondlevel['Children']:
                         scps = ""
-                        for scp in thirdlevel['SCPs']:
-                            scps += f"{scp['Name']} "
+                        if(thirdlevel['SCPs'] != []):
+                            scps += "Attached SCPs: "
+                            for scp in thirdlevel['SCPs']:
+                                scps += f"{scp['Name']} "
                         csv += f"\n{thirdlevel['Id']},{thirdlevel['Name']},{scps},{secondlevel['Id']},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
                         if thirdlevel['Children'] == 'No-Children':
                             logger.info(f"{thirdlevel['Name']} has no No-Children")
                         else:
                             for fourlevel in thirdlevel['Children']:
                                 scps = ""
-                                for scp in fourlevel['SCPs']:
-                                    scps += f"{scp['Name']} "
+                                if(fourlevel['SCPs'] != []):
+                                    scps += "Attached SCPs: "
+                                    for scp in fourlevel['SCPs']:
+                                        scps += f"{scp['Name']} "
                                 csv += f"\n{fourlevel['Id']},{fourlevel['Name']},{scps},{thirdlevel['Id']},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
                                 if fourlevel['Children'] == 'No-Children':
                                     logger.info(f"{fourlevel['Name']} has no No-Children")
                                 else:
                                     for fivelevel in fourlevel['Children']:
                                         scps = ""
-                                        for scp in fivelevel['SCPs']:
-                                            scps += f"{scp['Name']} "
+                                        if(fivelevel['SCPs'] != []):
+                                            scps += "Attached SCPs: "
+                                            for scp in fivelevel['SCPs']:
+                                                scps += f"{scp['Name']} "
                                         csv += f"\n{fivelevel['Id']},{fivelevel['Name']},{scps},{fourlevel['Id']},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
     csvfile.write(csv)
     csvfile.close
