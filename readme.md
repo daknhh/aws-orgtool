@@ -38,7 +38,7 @@ This Tool is to export your AWS Organizations structure, SCPs to Json file and i
 #### Visualize Organization with diagrams.net: `visualize_organization_diagrams -f <file.json> -p AWSPROFILE`
 
 ℹ️  The tool will generate a organziations.csv file.
-Follow the guide: [Import from CSV to draw.io diagrams](https://drawio-app.com/import-from-csv-to-drawio/)
+Follow the guide to [import from CSV to draw.io diagrams](https://drawio-app.com/import-from-csv-to-drawio/)
 
 ![Example Output](static/visualize-organization-example-diagrams.png)
 ### How to use the tool with virtual env:
