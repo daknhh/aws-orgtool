@@ -35,7 +35,7 @@ def visualize_organization_diagrams(file,profile):
 ## Node style (placeholders are replaced once).
 ## Default is the current style for nodes.
 #
-# style: label;image=%image%;whiteSpace=wrap;html=1;rounded=1;fillColor=#fff;strokeColor=#000;
+# style: label;image=%image%;whiteSpace=wrap;html=1;rounded=1;fillColor=#fff;strokeColor=#545B64;
 #
 ## Parent style for nodes with child nodes (placeholders are replaced once).
 #
