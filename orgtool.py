@@ -5,12 +5,192 @@ import sys, getopt
 import webbrowser
 from graphviz import Digraph
 import string
+import os
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO, filename='orgtool.log')
 logger = logging.getLogger('oustructure')
 
-def visualize_organization(file,profile):
+def visualize_organization_diagrams(file,profile):
+    session = boto3.Session(profile_name=profile)
+    org = session.client('organizations')
+    logger.info(f'Import Json file: {file}')    
+    f = open(file,)
+    data = json.load(f)
+
+    csvfile = 'organizations.csv'
+    if os.path.exists(csvfile):
+        print("Remove old CSV File.")
+        os.remove(csvfile)
+
+    csvfile = open(csvfile,"w")
+    csv = """##
+## Example CSV import. Use ## for comments and # for configuration. Paste CSV below.
+## The following names are reserved and should not be used (or ignored):
+## id, tooltip, placeholder(s), link and label (see below)
+##
+#
+#
+# label: %ou%<br><i style="color:black;fontSize=8"></br> Attached SCPs: %scps% - </i><br>
+## Node style (placeholders are replaced once).
+## Default is the current style for nodes.
+#
+# style: label;image=%image%;whiteSpace=wrap;html=1;rounded=1;fillColor=#fff;strokeColor=#000;
+#
+## Parent style for nodes with child nodes (placeholders are replaced once).
+#
+# parentstyle: swimlane;whiteSpace=wrap;html=1;childLayout=stackLayout;horizontal=1;horizontalStack=0;resizeParent=1;resizeLast=0;collapsible=1;
+#
+## Optional column name that contains a reference to a named style in styles.
+## Default is the current style for nodes.
+#
+# stylename: -
+#
+## JSON for named styles of the form {"name": "style", "name": "style"} where style is a cell style with
+## placeholders that are replaced once.
+#
+# styles: -
+#
+## JSON for variables in styles of the form {"name": "value", "name": "value"} where name is a string
+## that will replace a placeholder in a style.
+#
+# vars: -
+#
+## Optional column name that contains a reference to a named label in labels.
+## Default is the current label.
+#
+# labelname: -
+#
+## JSON for named labels of the form {"name": "label", "name": "label"} where label is a cell label with
+## placeholders.
+#
+# labels: -
+#
+## Uses the given column name as the identity for cells (updates existing cells).
+## Default is no identity (empty value or -).
+#
+# identity: -
+#
+## Uses the given column name as the parent reference for cells. Default is no parent (empty or -).
+## The identity above is used for resolving the reference so it must be specified.
+#
+# parent: -
+#
+## Adds a prefix to the identity of cells to make sure they do not collide with existing cells (whose
+## IDs are numbers from 0..n, sometimes with a GUID prefix in the context of realtime collaboration).
+## Default is csvimport-.
+#
+# namespace: csvimport-
+#
+## Connections between rows ("from": source colum, "to": target column).
+## Label, style and invert are optional. Defaults are '', current style and false.
+## If placeholders are used in the style, they are replaced with data from the source.
+## An optional placeholders can be set to target to use data from the target instead.
+## In addition to label, an optional fromlabel and tolabel can be used to name the column
+## that contains the text for the label in the edges source or target (invert ignored).
+## The label is concatenated in the form fromlabel + label + tolabel if all are defined.
+## Additional labels can be added by using an optional labels array with entries of the
+## form {"label": string, "x": number, "y": number, "dx": number, "dy": number} where
+## x is from -1 to 1 along the edge, y is orthogonal, and dx/dy are offsets in pixels.
+## The target column may contain a comma-separated list of values.
+## Multiple connect entries are allowed.
+#
+# connect: {"from": "refs", "to": "id", "style": "curved=0;fontSize=11;"}
+#
+## Node x-coordinate. Possible value is a column name. Default is empty. Layouts will
+## override this value.
+#
+# left: 
+#
+## Node y-coordinate. Possible value is a column name. Default is empty. Layouts will
+## override this value.
+#
+# top: 
+#
+## Node width. Possible value is a number (in px), auto or an @ sign followed by a column
+## name that contains the value for the width. Default is auto.
+#
+# width: auto
+#
+## Node height. Possible value is a number (in px), auto or an @ sign followed by a column
+## name that contains the value for the height. Default is auto.
+#
+# height: auto
+#
+## Padding for autosize. Default is 0.
+#
+# padding: 0
+#
+## Comma-separated list of ignored columns for metadata. (These can be
+## used for connections and styles but will not be added as metadata.)
+#
+#
+## Column to be renamed to link attribute (used as link).
+#
+# ignore: id,image,refs
+#
+## Spacing between nodes. Default is 40.
+#
+# nodespacing: 40
+#
+## Spacing between levels of hierarchical layouts. Default is 100.
+#
+# levelspacing: 100
+#
+## Spacing between parallel edges. Default is 40. Use 0 to disable.
+#
+# edgespacing: 10
+#
+## Name or JSON of layout. Possible values are auto, none, verticaltree, horizontaltree,
+## verticalflow, horizontalflow, organic, circle or a JSON string as used in Layout, Apply.
+## Default is auto.
+#
+# layout: verticalflow
+#
+## ---- CSV below this line. First line are column names."""
+    root_id = org.list_roots()['Roots'][0]['Id']
+    csv += f"\nid,ou,scps,refs,image\n{root_id},'ManagementAccount',,https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
+    for firstlevel in data['Ous']:
+        scps = ""
+        for scp in firstlevel['SCPs']:
+            scps += f"{scp['Name']} "
+        csv += f"\n{firstlevel['Id']},{firstlevel['Name']},{scps},{root_id},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+        if firstlevel['Children'] == 'No-Children':
+            logger.info(f"{firstlevel['Name']} has no No-Children")
+        else:
+            for secondlevel in firstlevel['Children']:
+                scps = ""
+                for scp in secondlevel['SCPs']:
+                    scps += f"{scp['Name']} "
+                csv += f"\n{secondlevel['Id']},{secondlevel['Name']},{scps},{firstlevel['Id']},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+                if secondlevel['Children'] == 'No-Children':
+                    logger.info(f"{secondlevel['Name']} has no No-Children")
+                else:
+                    for thirdlevel in secondlevel['Children']:
+                        scps = ""
+                        for scp in thirdlevel['SCPs']:
+                            scps += f"{scp['Name']} "
+                        csv += f"\n{thirdlevel['Id']},{thirdlevel['Name']},{scps},{secondlevel['Id']},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+                        if thirdlevel['Children'] == 'No-Children':
+                            logger.info(f"{thirdlevel['Name']} has no No-Children")
+                        else:
+                            for fourlevel in thirdlevel['Children']:
+                                scps = ""
+                                for scp in fourlevel['SCPs']:
+                                    scps += f"{scp['Name']} "
+                                csv += f"\n{fourlevel['Id']},{fourlevel['Name']},{scps},{thirdlevel['Id']},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+                                if fourlevel['Children'] == 'No-Children':
+                                    logger.info(f"{fourlevel['Name']} has no No-Children")
+                                else:
+                                    for fivelevel in fourlevel['Children']:
+                                        scps = ""
+                                        for scp in fivelevel['SCPs']:
+                                            scps += f"{scp['Name']} "
+                                        csv += f"\n{fivelevel['Id']},{fivelevel['Name']},{scps},{fourlevel['Id']},https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+    csvfile.write(csv)
+    csvfile.close
+
+def visualize_organization_graphviz(file,profile):
     session = boto3.Session(profile_name=profile)
     org = session.client('organizations')
     logger.info(f'Import Json file: {file}')    
@@ -49,7 +229,7 @@ def visualize_organization(file,profile):
                                         dot.edge(f"{fourlevel['Id']}", f"{fivelevel['Id']}")
     dot.graph_attr['nodesep']='1.0'
     #print(dot.source)
-    dot.render('organization.gv', view=True)
+    dot.render('organization.gv', view=True,format='png')
     f.close() 
     
     
@@ -586,7 +766,8 @@ def main(argv):
         print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
         print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
         print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
-        print('Visualize Organization: orgtool.py -u visualize-organization -f <file.json> -p AWSPROFILE')
+        print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
+        print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE')
         sys.exit(2)
     for opt, arg in opts:
         if opt == '-h':
@@ -597,7 +778,8 @@ def main(argv):
             print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
             print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
             print('Attach SCPs: orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE')
-            print('Visualize Organization: orgtool.py -u visualize-organization -f <file.json> -p AWSPROFILE')
+            print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
+            print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE')
             sys.exit()
         elif opt in ("-u", "--usage"):
             print(f'Current usage: {arg}')
@@ -635,10 +817,14 @@ def main(argv):
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Validate Scps from Json')
         attach_policies(file,profile)
-    elif usage == 'visualize-organization':
+    elif usage == 'visualize-organization-graphviz':
         logger.info('---------------------------------------------------')
-        logger.info('NEW REQUEST: visualize Organization from Json')
-        visualize_organization(file,profile)
+        logger.info('NEW REQUEST: visualize Organization with graphviz from Json')
+        visualize_organization_graphviz(file,profile)
+    elif usage == 'visualize-organization-diagrams':
+        logger.info('---------------------------------------------------')
+        logger.info('NEW REQUEST: visualize Organization with diagrams.net from Json')
+        visualize_organization_diagrams(file,profile)
     print('ℹ️: logs can be found in orgtool.log')
 
 if __name__ == "__main__":

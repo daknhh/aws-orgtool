@@ -29,14 +29,18 @@ This Tool is to export your AWS Organizations structure, SCPs to Json file and i
 ℹ️ Uses Access Analyzer policy validation to validates your SCPs against IAM [policy grammar](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html) and [best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html). 
 
 ### Visualization:
-#### Visualize Organization: `orgtool.py -u visualize-organization -f <file.json> -p AWSPROFILE`
+#### Visualize Organization with grpahviz: `visualize_organization_graphviz -f <file.json> -p AWSPROFILE`
 
 ℹ️ Visualize Organization currently use [Graphviz](https://www.graphviz.org/download/) please install before using the function.
 
+![Example Output](static/visualize-organization-example-graphviz.png)
 
-![Example Output](static/visualize-organization-example.png)
+#### Visualize Organization with diagrams.net: `visualize_organization_diagrams -f <file.json> -p AWSPROFILE`
 
+ℹ️  The tool will generate a organziations.csv file.
+Follow the guide: [Import from CSV to draw.io diagrams](https://drawio-app.com/import-from-csv-to-drawio/)
 
+![Example Output](static/visualize-organization-example-diagrams.png)
 ### How to use the tool with virtual env:
 
 1. Creating virtual env: 
