@@ -6,6 +6,7 @@ import webbrowser
 from graphviz import Digraph
 import string
 import os
+from tqdm import tqdm
 
 FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO, filename='orgtool.log')
@@ -150,7 +151,8 @@ def visualize_organization_diagrams(file,profile):
 ## ---- CSV below this line. First line are column names."""
     root_id = org.list_roots()['Roots'][0]['Id']
     csv += f"\nid,ou,scps,refs,image\n{root_id},'ManagementAccount',,,https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
-    for firstlevel in data['Ous']:
+    print("Generating visualization of Organization.")
+    for firstlevel in tqdm(data['Ous']):
         scps = ""
         if(firstlevel['SCPs'] != []):
             scps += "Attached SCPs: "
@@ -209,7 +211,8 @@ def visualize_organization_graphviz(file,profile):
     dot = Digraph(comment='Organization',edge_attr={'arrowhead':'none'})
     root_id = org.list_roots()['Roots'][0]['Id']
     dot.node('O', f"Organization: \n{root_id}")
-    for firstlevel in data['Ous']:
+    print("Generating visualization of Organization.")
+    for firstlevel in tqdm(data['Ous']):
         dot.node(f"{firstlevel['Id']}", f"{firstlevel['Name']}",shape='box')
         dot.edge(f"O",f"{firstlevel['Id']}")
         if firstlevel['Children'] == 'No-Children':
@@ -252,8 +255,8 @@ def export_policies(file,profile):
     )
     logger.info(f'Inititalize Dict for SCPs')
     policies = {}
-
-    for scp in response['Policies']:
+    print("Exporting SCPs.")
+    for scp in tqdm(response['Policies']):
         contentfile = f"scps/{scp['Name']}.json"
         
         responsepolicy = org.describe_policy(
@@ -264,7 +267,7 @@ def export_policies(file,profile):
         json.dump(content, scpcontent, indent = 6)
         scpcontent.close()
         logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
-        print(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
+        print(f'\n\nCreated SCP Content File: {contentfile} in scps directory 🗂.')
         policies.setdefault('Scps', []).append({'Id': scp['Id'],'Name': scp['Name'],'Description': scp['Description'],'ContentFile':contentfile})
         logger.info(f'Add SCP {scp} to policies Dict.')
         print(f"Add SCP {scp['Name']} to policies Dict.")
@@ -284,7 +287,7 @@ def import_policies(file,profile):
     print("\n************************")
     print("\nImport-SCPs:")
 
-    for scp in data['Scps']:
+    for scp in tqdm(data['Scps']):
         print(f"- {scp['Name']}")
         f = open(scp['ContentFile'],)
         print(f"  - Import Json file: {scp['ContentFile']}.")
@@ -298,10 +301,10 @@ def import_policies(file,profile):
             Type='SERVICE_CONTROL_POLICY'
             )
             logger.info(f"Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.") 
-            print(f"✅ Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n") 
+            print(f"\n\n✅ Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n") 
         except org.exceptions.DuplicatePolicyException:
             logger.info(f"SCP with Name: {scp['Name']} - already exist.") 
-            print(f"ℹ SCP with Name: {scp['Name']} - already exist. \n\n") 
+            print(f"\n\nℹ SCP with Name: {scp['Name']} - already exist. \n\n") 
     print("\n************************")
     print(f'✅ SCPs have been imported.')
 
@@ -314,7 +317,7 @@ def validate_policies(file,profile):
     print("\n************************")
     print("Validate Policies \n")
 
-    for scp in data['Scps']:
+    for scp in tqdm(data['Scps']):
         print(f"\n------------------------------------------")
         print(f"🔍 Findings for: \n{scp['Name']} SCP \n\n")
         logger.info(f"Validate SCP with Name: {scp['Name']}") 
@@ -325,7 +328,7 @@ def validate_policies(file,profile):
         )
         for finding in response['findings']:
             if finding['findingDetails'] == 'Fix the JSON syntax error at index 0 line 1 column 0.':
-                break
+                print(f"🥳 No Finding.")
             else: 
                 if finding['findingType'] == 'ERROR':
                     findingtype = '❗️'
@@ -530,14 +533,15 @@ def attach_policies(file,profile):
     root_id = org.list_roots()['Roots'][0]['Id']
     print("\n************************")
     print("\nAttach-SCPs:")
-    for firstlevel in data['Ous']: 
+    for firstlevel in tqdm(data['Ous']): 
+        
         firstlevelname = firstlevel['Name']
         firstlevelou_id = get_ou_id_by_name(firstlevelname,root_id,profile)
         if(firstlevel['SCPs'] == []):
             logger.info(f'No SCP to attach for: {firstlevelou_id} - {firstlevelname} in {root_id}')
-            print(f'\nℹ️ No SCPs for OU: {firstlevelname}.')         
+            print(f'\nℹ️ No SCPs for OU: {firstlevelname}.\n')         
         else:
-            print(f'\nattaching SCPs to OU {firstlevelname}:') 
+            print(f'\n\nAttaching SCPs to OU {firstlevelname}:') 
             for scp in firstlevel['SCPs']:
                 policyid = scps_in_org.get(scp['Name'])                
                 try:
@@ -561,7 +565,7 @@ def attach_policies(file,profile):
                         logger.info(f'No SCP to attach for: {secondlevelou_id} - {secondlevelname} in {firstlevelou_id}')
                         print(f'\nℹ️ No SCPs for OU: {secondlevelname}.')         
                     else:
-                        print(f'\nattaching SCPs to OU {secondlevelname}:') 
+                        print(f'\n\nAttaching SCPs to OU {secondlevelname}:') 
                         for scp in secondlevel['SCPs']:
                             policyid = scps_in_org.get(scp['Name'])                
                             try:
@@ -584,7 +588,7 @@ def attach_policies(file,profile):
                                     logger.info(f'No SCPs to attach for: {thirdlevelou_id} - {thirdlevelname} in {secondlevelou_id}')
                                     print(f'\nℹ️ No SCPs for OU: {thirdlevelname}.')         
                                 else:
-                                    print(f'\nattaching SCPs to OU {thirdlevelname}:') 
+                                    print(f'\n\nAttaching SCPs to OU {thirdlevelname}:') 
                                     for scp in thirdlevel['SCPs']:
                                         policyid = scps_in_org.get(scp['Name'])                
                                         try:
@@ -608,7 +612,7 @@ def attach_policies(file,profile):
                                             logger.info(f'No SCPs to attach for: {fourlevelou_id} - {fourlevelname} in {thirdlevelou_id}')
                                             print(f'\nℹ️ No SCPs for OU: {fourlevelname}.')         
                                         else:
-                                            print(f'\nattaching SCPs to OU {fourlevelname}:') 
+                                            print(f'\n\nAttaching SCPs to OU {fourlevelname}:') 
                                             for scp in fourlevel['SCPs']:
                                                 policyid = scps_in_org.get(scp['Name'])                
                                                 try:
@@ -631,7 +635,7 @@ def attach_policies(file,profile):
                                                     logger.info(f'No SCPs to attach for: {fivelevelou_id} - {fivelevelname} in {fourlevelou_id}')
                                                     print(f'\nℹ️ No SCPs for OU: {fivelevelname}.')         
                                                 else:
-                                                    print(f'\nattaching SCPs to OU {fourlevelname}:') 
+                                                    print(f'\n\nAttaching SCPs to OU {fourlevelname}:') 
                                                     for scp in fivelevel['SCPs']:
                                                         policyid = scps_in_org.get(scp['Name'])                
                                                         try:
@@ -765,7 +769,7 @@ def import_structure(file,profile):
 
 def main(argv):
     print('------------------------------------------------------------------------------')
-    print('ORGTOOL for exporting and importing AWS organizations structure to / from Json')
+    print('ORGTOOL for: \n exporting and importing AWS organizations structure and SCPs to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
     print('------------------------------------------------------------------------------')
     try:
         opts, args = getopt.getopt(argv,"hu:f:p:",["u=","f=","p="])
