@@ -1,6 +1,5 @@
 boto3
-json
 logging
-sys
 getopt
 graphviz
+tqdm
