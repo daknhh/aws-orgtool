@@ -12,9 +12,8 @@ FORMAT = '%(asctime)-15s %(message)s'
 logging.basicConfig(format=FORMAT, level=logging.INFO, filename='orgtool.log')
 logger = logging.getLogger('oustructure')
 
-def visualize_organization_diagrams(file,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def visualize_organization_diagrams(file,org):
+
     logger.info(f'Import Json file: {file}')    
     f = open(file,)
     data = json.load(f)
@@ -202,9 +201,8 @@ def visualize_organization_diagrams(file,profile):
     csvfile.write(csv)
     csvfile.close
 
-def visualize_organization_graphviz(file,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def visualize_organization_graphviz(file,org):
+
     logger.info(f'Import Json file: {file}')    
     f = open(file,)
     data = json.load(f)
@@ -247,9 +245,8 @@ def visualize_organization_graphviz(file,profile):
     
     
 
-def export_policies(file,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def export_policies(file,org):
+
     response = org.list_policies(
     Filter='SERVICE_CONTROL_POLICY'
     )
@@ -278,9 +275,8 @@ def export_policies(file,profile):
     print("\n************************")
     print(f'SCPs have been written to File: {file} 🗃.')
 
-def import_policies(file,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def import_policies(file,org):
+
     logger.info(f'Import Json file: {file}')    
     f = open(file,)
     data = json.load(f) 
@@ -308,9 +304,7 @@ def import_policies(file,profile):
     print("\n************************")
     print(f'✅ SCPs have been imported.')
 
-def validate_policies(file,profile):
-    session = boto3.Session(profile_name=profile,region_name='us-east-1')
-    accessanalyzer = session.client('accessanalyzer')
+def validate_policies(file,accessanalyzer):
     logger.info(f'Load Json file: {file}')    
     f = open(file,)
     data = json.load(f) 
@@ -344,9 +338,7 @@ def validate_policies(file,profile):
                 print(f"🔗 Learn more: \x1b]8;;{finding['learnMoreLink']}\aCtrl+Click here\x1b]8;;\a \n")
                 logger.info(f"Finding in {scp['Name']} - Type:{finding['findingType']} - Details:{finding['findingDetails']} - Code:{finding['issueCode']} - Learn more:{finding['learnMoreLink']}")
                  
-def get_ou_stucture(parent_id,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def get_ou_stucture(parent_id,org):
     paginator = org.get_paginator('list_organizational_units_for_parent')
     page_iterator = paginator.paginate(ParentId=parent_id)
     ous = {}
@@ -367,7 +359,7 @@ def get_ou_stucture(parent_id,profile):
         page_iterator = paginator.paginate(ParentId=ou['Id'])
         logger.info(f'Check {ou} for Children')
         for page in page_iterator:
-            scp = get_scpforou(ou['Id'],profile)
+            scp = get_scpforou(ou['Id'],org)
             if page['OrganizationalUnits'] == []:
                 ou_secondlevel = {'Children':'No-Children'}
                 print(" - %s" % (ou['Name']))
@@ -386,7 +378,7 @@ def get_ou_stucture(parent_id,profile):
                 logger.info('No-Children') 
             else:
                 for idx2, ou3 in enumerate(ous['Ous'][idx]['Children']):
-                    scp = get_scpforou(ou3['Id'],profile)
+                    scp = get_scpforou(ou3['Id'],org)
                     page_iterator2 = paginator.paginate(ParentId=ou3['Id'])
                     logger.info(f'Check {ou3} for Children')
                     for page in page_iterator2:
@@ -410,7 +402,7 @@ def get_ou_stucture(parent_id,profile):
                             logger.info('No-Children')
                         else:
                             for idx3, ou4 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children']):
-                                scp = get_scpforou(ou4['Id'],profile)
+                                scp = get_scpforou(ou4['Id'],org)
                                 page_iterator3 = paginator.paginate(ParentId=ou4['Id'])
                                 logger.info(f'Check {ou4} for Children')
                                 for page in page_iterator3:
@@ -434,7 +426,7 @@ def get_ou_stucture(parent_id,profile):
                                         logger.info('No-Children')
                                     else:
                                         for idx4, ou5 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children']):
-                                            scp = get_scpforou(ou5['Id'],profile)
+                                            scp = get_scpforou(ou5['Id'],org)
                                             page_iterator4 = paginator.paginate(ParentId=ou5['Id'])
                                             logger.info(f'Check {ou5} for Children')
                                             for page in page_iterator4:
@@ -457,7 +449,7 @@ def get_ou_stucture(parent_id,profile):
                                                 logger.info('No-Children')
                                             else:
                                                 for idx5, ou6 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children']):
-                                                    scp = get_scpforou(ou6['Id'],profile)
+                                                    scp = get_scpforou(ou6['Id'],org)
                                                     page_iterator5 = paginator.paginate(ParentId=ou6['Id'])
                                                     logger.info(f'Check {ou6} for Children')
                                                     for page in page_iterator5:
@@ -478,12 +470,10 @@ def get_ou_stucture(parent_id,profile):
                                                             ou_sevenlevel.clear()    
     return ous
 
-def export_structure(file,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def export_structure(file,org):
     root_id = org.list_roots()['Roots'][0]['Id']
     logger.info('Query first level OUs')
-    ous= get_ou_stucture(root_id,profile)
+    ous= get_ou_stucture(root_id,org)
     out_file = open(file, "w") 
     json.dump(ous, out_file, indent = 6) 
     out_file.close()
@@ -491,9 +481,7 @@ def export_structure(file,profile):
     logger.info(f'\n Write Ous to file: {file}')
     print(f'Ous have been written to {file}.')
 
-def get_scpforou(ou_id,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def get_scpforou(ou_id,org):
     response = org.list_policies_for_target(
         TargetId=ou_id,
         Filter='SERVICE_CONTROL_POLICY',
@@ -507,9 +495,7 @@ def get_scpforou(ou_id,profile):
             scp.setdefault('SCPs',[]).append({'Name': policy['Name']})    
     return scp
 
-def get_all_scps(profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def get_all_scps(org):
     response = org.list_policies(
     Filter='SERVICE_CONTROL_POLICY',
     )
@@ -522,10 +508,8 @@ def get_all_scps(profile):
     convertedDict = json.loads(allscpsstring)
     return convertedDict
 
-def attach_policies(file,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
-    scps_in_org = get_all_scps(profile)
+def attach_policies(file,org):
+    scps_in_org = get_all_scps(org)
     logger.info(f'Import Json file: {file}')    
     f = open(file,)
     data = json.load(f) 
@@ -536,7 +520,7 @@ def attach_policies(file,profile):
     for firstlevel in tqdm(data['Ous']): 
         
         firstlevelname = firstlevel['Name']
-        firstlevelou_id = get_ou_id_by_name(firstlevelname,root_id,profile)
+        firstlevelou_id = get_ou_id_by_name(firstlevelname,root_id,org)
         if(firstlevel['SCPs'] == []):
             logger.info(f'No SCP to attach for: {firstlevelou_id} - {firstlevelname} in {root_id}')
             print(f'\nℹ️ No SCPs for OU: {firstlevelname}.\n')         
@@ -560,7 +544,7 @@ def attach_policies(file,profile):
             else:
                 for secondlevel in firstlevel['Children']:
                     secondlevelname = secondlevel['Name']
-                    secondlevelou_id = get_ou_id_by_name(secondlevelname,firstlevelou_id,profile)
+                    secondlevelou_id = get_ou_id_by_name(secondlevelname,firstlevelou_id,org)
                     if(secondlevel['SCPs'] == []):
                         logger.info(f'No SCP to attach for: {secondlevelou_id} - {secondlevelname} in {firstlevelou_id}')
                         print(f'\nℹ️ No SCPs for OU: {secondlevelname}.')         
@@ -583,7 +567,7 @@ def attach_policies(file,profile):
                         else:
                             for thirdlevel in secondlevel['Children']:
                                 thirdlevelname = thirdlevel['Name']
-                                thirdlevelou_id = get_ou_id_by_name(thirdlevelname,secondlevelou_id,profile)
+                                thirdlevelou_id = get_ou_id_by_name(thirdlevelname,secondlevelou_id,org)
                                 if(thirdlevel['SCPs'] == []):
                                     logger.info(f'No SCPs to attach for: {thirdlevelou_id} - {thirdlevelname} in {secondlevelou_id}')
                                     print(f'\nℹ️ No SCPs for OU: {thirdlevelname}.')         
@@ -607,7 +591,7 @@ def attach_policies(file,profile):
                                 else:
                                     for fourlevel in thirdlevel['Children']:
                                         fourlevelname = thirdlevel['Name']
-                                        fourlevelou_id = get_ou_id_by_name(fourlevelname,thirdlevelou_id,profile)
+                                        fourlevelou_id = get_ou_id_by_name(fourlevelname,thirdlevelou_id,org)
                                         if(fourlevel['SCPs'] == []):
                                             logger.info(f'No SCPs to attach for: {fourlevelou_id} - {fourlevelname} in {thirdlevelou_id}')
                                             print(f'\nℹ️ No SCPs for OU: {fourlevelname}.')         
@@ -630,7 +614,7 @@ def attach_policies(file,profile):
                                         else:
                                             for fivelevel in fourlevel['Children']:
                                                 fivelevelname = fivelevel['Name']
-                                                fivelevelou_id = get_ou_id_by_name(fivelevelname,fourlevelou_id,profile)
+                                                fivelevelou_id = get_ou_id_by_name(fivelevelname,fourlevelou_id,org)
                                                 if(fivelevel['SCPs'] == []):
                                                     logger.info(f'No SCPs to attach for: {fivelevelou_id} - {fivelevelname} in {fourlevelou_id}')
                                                     print(f'\nℹ️ No SCPs for OU: {fivelevelname}.')         
@@ -649,12 +633,9 @@ def attach_policies(file,profile):
                                                             logger.info(f'Already attached: {policyid} to {fivelevelou_id}')
                                                             print(f"✅ {scp['Name']} - {policyid}")
 
-def get_ou_id_by_name(name,parent_id,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def get_ou_id_by_name(name,parent_id,org):
     paginator = org.get_paginator('list_organizational_units_for_parent')
     page_iterator = paginator.paginate(ParentId=parent_id)
-    session = boto3.Session(profile_name=profile)
     search_key = name
     logger.info(f'Search for OuID by name: {name}')
     for page in page_iterator:
@@ -665,9 +646,7 @@ def get_ou_id_by_name(name,parent_id,profile):
                             logger.info(f'Got OuID: {res}')
     return(res)
 
-def import_structure(file,profile):
-    session = boto3.Session(profile_name=profile)
-    org = session.client('organizations')
+def import_structure(file,org):
     logger.info(f'Import Json file: {file}')    
     f = open(file,)
     data = json.load(f) 
@@ -690,7 +669,7 @@ def import_structure(file,profile):
             logger.info('OU already exist')
             firstlevelname = firstlevel['Name']
             print(f' - {firstlevelname}')
-            firstlevelou_id = get_ou_id_by_name(firstlevel['Name'],root_id,profile)  
+            firstlevelou_id = get_ou_id_by_name(firstlevel['Name'],root_id,org)  
         if firstlevel['Children'] == 'No-Children':
             logger.info(f'{firstlevelname} has no No-Children')
         else:
@@ -707,7 +686,7 @@ def import_structure(file,profile):
                 except (org.exceptions.DuplicateOrganizationalUnitException):
                     secondlevelname = secondlevel['Name']
                     print(f' - - {secondlevelname}')
-                    secondlevelou_id = get_ou_id_by_name(secondlevel['Name'],firstlevelou_id,profile)
+                    secondlevelou_id = get_ou_id_by_name(secondlevel['Name'],firstlevelou_id,org)
 
                 if secondlevel['Children'] == 'No-Children':
                     logger.info(f'{secondlevelname} has no No-Children')
@@ -725,7 +704,7 @@ def import_structure(file,profile):
                         except (org.exceptions.DuplicateOrganizationalUnitException):
                             thirdlevelname = thirdlevel['Name']
                             print(f' - - - {thirdlevelname}')
-                            thirdlevellevelou_id = get_ou_id_by_name(thirdlevel['Name'],secondlevelou_id,profile)
+                            thirdlevellevelou_id = get_ou_id_by_name(thirdlevel['Name'],secondlevelou_id,org)
 
                         if thirdlevel['Children'] == 'No-Children':
                             logger.info(f'{thirdlevelname} has no No-Children')
@@ -743,7 +722,7 @@ def import_structure(file,profile):
                                 except (org.exceptions.DuplicateOrganizationalUnitException):
                                     fourlevelname = fourlevel['Name']
                                     print(f' - - - - {fourlevelname}')
-                                    fourlevelou_id = get_ou_id_by_name(fourlevel['Name'],thirdlevellevelou_id,profile)
+                                    fourlevelou_id = get_ou_id_by_name(fourlevel['Name'],thirdlevellevelou_id,org)
                             
                             if fourlevel['Children'] == 'No-Children':
                                 logger.info(f'{fourlevelname} has no No-Children')
@@ -761,7 +740,7 @@ def import_structure(file,profile):
                                     except (org.exceptions.DuplicateOrganizationalUnitException):
                                         fivelevelname = fivelevel['Name']
                                         print(f' - - - - - {fivelevelname}')
-                                        fivelevelou_id = get_ou_id_by_name(fivelevel['Name'],fourlevelou_id,profile)
+                                        fivelevelou_id = get_ou_id_by_name(fivelevel['Name'],fourlevelou_id,org)
 
     f.close() 
     logger.info(f'\n OU Structure has been imported.')
@@ -807,38 +786,42 @@ def main(argv):
             print(f'Profile {arg}')
             logger.info(f'Profile:{arg}')
             profile = arg
+
+    session = boto3.Session(profile_name=profile)
+    org = session.client('organizations')
+    accessanalyzer = session.client('accessanalyzer')
     if usage == 'export':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Export OUs to Json')
-        export_structure(file,profile)
+        export_structure(file,org)
     elif usage == 'import':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Import OUs from Json')
-        import_structure(file,profile)
+        import_structure(file,org)
     elif usage == 'export-scps':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Export Scps to Json')
-        export_policies(file,profile)
+        export_policies(file,org)
     elif usage == 'import-scps':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Import Scps from Json')
-        import_policies(file,profile)
+        import_policies(file,org)
     elif usage == 'validate-scps':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Validate Scps from Json')
-        validate_policies(file,profile)
+        validate_policies(file,accessanalyzer)
     elif usage == 'attach-scps':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Validate Scps from Json')
-        attach_policies(file,profile)
+        attach_policies(file,org)
     elif usage == 'visualize-organization-graphviz':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: visualize Organization with graphviz from Json')
-        visualize_organization_graphviz(file,profile)
+        visualize_organization_graphviz(file,org)
     elif usage == 'visualize-organization-diagrams':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: visualize Organization with diagrams.net from Json')
-        visualize_organization_diagrams(file,profile)
+        visualize_organization_diagrams(file,org)
     print('ℹ️: logs can be found in orgtool.log')
 
 if __name__ == "__main__":
