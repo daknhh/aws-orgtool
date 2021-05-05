@@ -206,7 +206,7 @@ def visualize_organization_graphviz(file,  org):
     logger.info(f'Import Json file: {file}')
     f = open(file, )
     data = json.load(f)
-    dot = Digraph(comment='Organization', edge_attr={'arrowhead':'none'})
+    dot = Digraph(comment='Organization', edge_attr={'arrowhead': 'none'})
     root_id = org.list_roots()['Roots'][0]['Id']
     dot.node('O',  f"Organization: \n{root_id}")
     print("Generating visualization of Organization.")
@@ -247,8 +247,7 @@ def visualize_organization_graphviz(file,  org):
 def export_policies(file,  org):
 
     response = org.list_policies(
-    Filter='SERVICE_CONTROL_POLICY'
-    )
+        Filter='SERVICE_CONTROL_POLICY')
     logger.info('Inititalize Dict for Policies')
     policies = {}
     if response['Policies'] == []:
@@ -274,7 +273,7 @@ def export_policies(file,  org):
             scpcontent.close()
             logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
             print(f'\n\nCreated SCP Content File: {contentfile} in scps directory 🗂.')
-            policies.setdefault('Scps',  []).append({'Id': scp['Id'], 'Name': scp['Name'], 'Description': scp['Description'], 'ContentFile':contentfile})
+            policies.setdefault('Scps',  []).append({'Id': scp['Id'], 'Name': scp['Name'], 'Description': scp['Description'], 'ContentFile': contentfile})
             logger.info(f'Add SCP {scp} to policies Dict.')
             print(f"Add SCP {scp['Name']} to policies Dict.")
         out_file = open(file,  "w")
@@ -306,7 +305,7 @@ def export_policies(file,  org):
             tagcontent.close()
             logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
             print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
-            policies.setdefault('Tags',  []).append({'Id': tag['Id'], 'Name': scp['Name'], 'Description': scp['Description'], 'ContentFile':contentfile})
+            policies.setdefault('Tags',  []).append({'Id': tag['Id'], 'Name': scp['Name'], 'Description': scp['Description'], 'ContentFile': contentfile})
             logger.info(f'Add Tag {tag} to policies Dict.')
             print(f"Add Tag {tag['Name']} to policies Dict.")
         out_file = open(file,  "w")
@@ -573,7 +572,7 @@ def attach_policies(file,  org):
             logger.info(f'No SCP to attach for: {firstlevelou_id} - {firstlevelname} in {root_id}')
             print(f'\nℹ️ No SCPs for OU: {firstlevelname}.\n')
         else:
-            print(f'\n\nAttaching SCPs to OU {firstlevelname}:')
+            print(f'\n\nAttaching SCPs to OU {firstlevelname}:  ')
             for scp in firstlevel['SCPs']:
                 policyid = scps_in_org.get(scp['Name'])
                 try:
@@ -597,7 +596,7 @@ def attach_policies(file,  org):
                         logger.info(f'No SCP to attach for: {secondlevelou_id} - {secondlevelname} in {firstlevelou_id}')
                         print(f'\nℹ️ No SCPs for OU: {secondlevelname}.')
                     else:
-                        print(f'\n\nAttaching SCPs to OU {secondlevelname}:')
+                        print(f'\n\nAttaching SCPs to OU {secondlevelname}:  ')
                         for scp in secondlevel['SCPs']:
                             policyid = scps_in_org.get(scp['Name'])
                             try:
@@ -620,7 +619,7 @@ def attach_policies(file,  org):
                                     logger.info(f'No SCPs to attach for: {thirdlevelou_id} - {thirdlevelname} in {secondlevelou_id}')
                                     print(f'\nℹ️ No SCPs for OU: {thirdlevelname}.')
                                 else:
-                                    print(f'\n\nAttaching SCPs to OU {thirdlevelname}:')
+                                    print(f'\n\nAttaching SCPs to OU {thirdlevelname}:  ')
                                     for scp in thirdlevel['SCPs']:
                                         policyid = scps_in_org.get(scp['Name'])
                                         try:
@@ -644,7 +643,7 @@ def attach_policies(file,  org):
                                             logger.info(f'No SCPs to attach for: {fourlevelou_id} - {fourlevelname} in {thirdlevelou_id}')
                                             print(f'\nℹ️ No SCPs for OU: {fourlevelname}.')
                                         else:
-                                            print(f'\n\nAttaching SCPs to OU {fourlevelname}:')
+                                            print(f'\n\nAttaching SCPs to OU {fourlevelname}:  ')
                                             for scp in fourlevel['SCPs']:
                                                 policyid = scps_in_org.get(scp['Name'])
                                                 try:
@@ -667,13 +666,13 @@ def attach_policies(file,  org):
                                                     logger.info(f'No SCPs to attach for: {fivelevelou_id} - {fivelevelname} in {fourlevelou_id}')
                                                     print(f'\nℹ️ No SCPs for OU: {fivelevelname}.')
                                                 else:
-                                                    print(f'\n\nAttaching SCPs to OU {fourlevelname}:')
+                                                    print(f'\n\nAttaching SCPs to OU {fourlevelname}:  ')
                                                     for scp in fivelevel['SCPs']:
                                                         policyid = scps_in_org.get(scp['Name'])
                                                         try:
-                                                            response = org.attach_policy(
-                                                            PolicyId=policyid,
-                                                            TargetId=fivelevelou_id,
+                                                            org.attach_policy(
+                                                                PolicyId=policyid,
+                                                                TargetId=fivelevelou_id,
                                                             )
                                                             logger.info(f'Attached: {policyid} to {fivelevelou_id}')
                                                             print(f"✅ {scp['Name']} - {policyid}")
@@ -690,9 +689,9 @@ def get_ou_id_by_name(name,  parent_id,  org):
     for page in page_iterator:
         for ou in page['OrganizationalUnits']:
             for (key,  value) in ou.items():
-                    if value == search_key:
-                            res = ou['Id']
-                            logger.info(f'Got OuID: {res}')
+                if value == search_key:
+                    res = ou['Id']
+                    logger.info(f'Got OuID: {res}')
     return(res)
 
 
@@ -708,11 +707,10 @@ def import_structure(file,  org):
     for firstlevel in data['Ous']:
         try:
             response = org.create_organizational_unit(
-            ParentId=root_id,
-            Name=firstlevel['Name']
-            )
+                ParentId=root_id,
+                Name=firstlevel['Name'])
             firstlevelou_id = response['OrganizationalUnit']['Id']
-            firstlevelname= firstlevel['Name']
+            firstlevelname = firstlevel['Name']
             logger.info(f'Created OU: {firstlevelou_id} - {firstlevelname} in {root_id}')
             print(f' - {firstlevelname}')
         except (org.exceptions.DuplicateOrganizationalUnitException):
@@ -726,9 +724,8 @@ def import_structure(file,  org):
             for secondlevel in firstlevel['Children']:
                 try:
                     response2 = org.create_organizational_unit(
-                    ParentId=firstlevelou_id,
-                    Name=secondlevel['Name']
-                    )
+                        ParentId=firstlevelou_id,
+                        Name=secondlevel['Name'])
                     secondlevelou_id = response2['OrganizationalUnit']['Id']
                     secondlevelname = secondlevel['Name']
                     logger.info(f'Created OU: {secondlevelname} with Id: {secondlevelou_id} {firstlevelname} in {firstlevelou_id}')
@@ -744,9 +741,8 @@ def import_structure(file,  org):
                     for thirdlevel in secondlevel['Children']:
                         try:
                             response3 = org.create_organizational_unit(
-                            ParentId=secondlevelou_id,
-                            Name=thirdlevel['Name']
-                            )
+                                ParentId=secondlevelou_id,
+                                Name=thirdlevel['Name'])
                             thirdlevellevelou_id = response3['OrganizationalUnit']['Id']
                             thirdlevelname = thirdlevel['Name']
                             logger.info(f'Created OU: {thirdlevelname} with Id: {thirdlevellevelou_id} {secondlevelname} in {secondlevelou_id}')
@@ -762,9 +758,8 @@ def import_structure(file,  org):
                             for fourlevel in thirdlevel['Children']:
                                 try:
                                     response4 = org.create_organizational_unit(
-                                    ParentId=thirdlevellevelou_id,
-                                    Name=fourlevel['Name']
-                                    )
+                                        ParentId=thirdlevellevelou_id,
+                                        Name=fourlevel['Name'])
                                     fourlevelou_id = response4['OrganizationalUnit']['Id']
                                     fourlevelname = fourlevel['Name']
                                     logger.info(f'Created OU: {fourlevelname} with Id: {fourlevelou_id} in {thirdlevellevelou_id}')
@@ -780,9 +775,8 @@ def import_structure(file,  org):
                                 for fivelevel in fourlevel['Children']:
                                     try:
                                         response5 = org.create_organizational_unit(
-                                        ParentId=fourlevelou_id,
-                                        Name=fivelevel['Name']
-                                        )
+                                            ParentId=fourlevelou_id,
+                                            Name=fivelevel['Name'])
                                         fivelevelou_id = response5['OrganizationalUnit']['Id']
                                         fivelevelname = fivelevel['Name']
                                         logger.info(f'Created OU: {fivelevelname} with Id: {fivelevelou_id} in {thirdlevellevelou_id}')
@@ -804,7 +798,7 @@ def main(argv):
     try:
         opts,  args = getopt.getopt(argv, "hu:f:p:", ["u=", "f=", "p="])
     except getopt.GetoptError:
-        print('Usage:')
+        print('Usage:  ')
         print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
         print('Export SCPs: orgtool.py -u export-scps -p AWSPROFILE')
         print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
@@ -815,7 +809,7 @@ def main(argv):
         sys.exit(2)
     for opt,  arg in opts:
         if opt == '-h':
-            print('Usage:')
+            print('Usage:  ')
             print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
             print('Export Policies: orgtool.py -u export-policies -f <file.json> -p AWSPROFILE')
             print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
@@ -877,4 +871,4 @@ def main(argv):
 
 
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    main(sys.argv[1:])
