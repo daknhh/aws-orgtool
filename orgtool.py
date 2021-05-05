@@ -261,7 +261,7 @@ def export_policies(file,org):
             )
         content = responsepolicy['Policy']['Content']
         scpcontent = open(contentfile, "w")
-        json.dump(content, scpcontent, indent = 6)
+        json.dump(json.loads(content), scpcontent, indent = 6)
         scpcontent.close()
         logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
         print(f'\n\nCreated SCP Content File: {contentfile} in scps directory 🗂.')
@@ -291,7 +291,7 @@ def import_policies(file,org):
         data = json.load(f)
         try:
             response = org.create_policy(
-            Content=data,
+            Content=json.dumps(data),
             Description=scp['Description'],
             Name=scp['Name'],
             Type='SERVICE_CONTROL_POLICY'
