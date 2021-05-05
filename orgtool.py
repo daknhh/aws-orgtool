@@ -250,30 +250,72 @@ def export_policies(file,org):
     response = org.list_policies(
     Filter='SERVICE_CONTROL_POLICY'
     )
-    logger.info(f'Inititalize Dict for SCPs')
+    logger.info(f'Inititalize Dict for Policies')
     policies = {}
-    print("Exporting SCPs.")
-    for scp in tqdm(response['Policies']):
-        contentfile = f"scps/{scp['Name']}.json"
-        
-        responsepolicy = org.describe_policy(
-            PolicyId=scp['Id']
-            )
-        content = responsepolicy['Policy']['Content']
-        scpcontent = open(contentfile, "w")
-        json.dump(json.loads(content), scpcontent, indent = 6)
-        scpcontent.close()
-        logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
-        print(f'\n\nCreated SCP Content File: {contentfile} in scps directory 🗂.')
-        policies.setdefault('Scps', []).append({'Id': scp['Id'],'Name': scp['Name'],'Description': scp['Description'],'ContentFile':contentfile})
-        logger.info(f'Add SCP {scp} to policies Dict.')
-        print(f"Add SCP {scp['Name']} to policies Dict.")
-    out_file = open(file, "w") 
-    json.dump(policies, out_file, indent = 6) 
-    out_file.close()
-    logger.info(f'Created SCPs File: {file}.')
-    print("\n************************")
-    print(f'SCPs have been written to File: {file} 🗃.')
+    if response['Policies'] == []:
+        print("\n\nℹ️ No SCPs.")
+        logger.info(f'No SCPs.')
+    else:
+        print("\n\n Exporting SCPs.")
+        if os.path.isdir('scps'):
+            logger.info(f'scps directory exist.')
+        else:
+            os.mkdir('scps')
+            print("\nDirectory scps created")
+            logger.info(f'Directory scps created.')
+        for scp in tqdm(response['Policies']):
+            contentfile = f"scps/{scp['Name']}.json"
+            
+            responsepolicy = org.describe_policy(
+                PolicyId=scp['Id']
+                )
+            content = responsepolicy['Policy']['Content']
+            scpcontent = open(contentfile, "w")
+            json.dump(json.loads(content), scpcontent, indent = 6)
+            scpcontent.close()
+            logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
+            print(f'\n\nCreated SCP Content File: {contentfile} in scps directory 🗂.')
+            policies.setdefault('Scps', []).append({'Id': scp['Id'],'Name': scp['Name'],'Description': scp['Description'],'ContentFile':contentfile})
+            logger.info(f'Add SCP {scp} to policies Dict.')
+            print(f"Add SCP {scp['Name']} to policies Dict.")
+        out_file = open(file, "w") 
+        json.dump(policies, out_file, indent = 6) 
+        out_file.close()
+    
+    response = org.list_policies(
+    Filter='TAG_POLICY'
+    )
+    if response['Policies'] == []:
+        print("\n\nℹ️ No Tag Policies.")
+    else:
+        print("\n\nExporting Tag Policies.") 
+        if os.path.isdir('tags'):
+            logger.info(f'tags directory exist.')
+        else:
+            os.mkdir('tags')
+            print("\n Directory tags created")
+            logger.info(f' Directory scps created.')
+        for tag in tqdm(response['Policies']):
+            contentfile = f"tags/{tag['Name']}.json"
+            
+            responsepolicy = org.describe_policy(
+                PolicyId=tag['Id']
+                )
+            content = responsepolicy['Policy']['Content']
+            tagcontent = open(contentfile, "w")
+            json.dump(json.loads(content), tagcontent, indent = 6)
+            tagcontent.close()
+            logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
+            print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
+            policies.setdefault('Tags', []).append({'Id': tag['Id'],'Name': scp['Name'],'Description': scp['Description'],'ContentFile':contentfile})
+            logger.info(f'Add Tag {tag} to policies Dict.')
+            print(f"Add Tag {tag['Name']} to policies Dict.")
+        out_file = open(file, "w") 
+        json.dump(policies, out_file, indent = 6) 
+        out_file.close()
+        logger.info(f'Created Policies File: {file}.')
+        print("\n************************")
+        print(f'Policies have been written to File: {file} 🗃.')
 
 def import_policies(file,org):
 
@@ -766,7 +808,7 @@ def main(argv):
         if opt == '-h':
             print('Usage:')
             print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
-            print('Export SCPs: orgtool.py -u export-scps -f <file.json> -p AWSPROFILE')
+            print('Export Policies: orgtool.py -u export-policies -f <file.json> -p AWSPROFILE')
             print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
             print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
             print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
@@ -798,9 +840,9 @@ def main(argv):
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Import OUs from Json')
         import_structure(file,org)
-    elif usage == 'export-scps':
+    elif usage == 'export-policies':
         logger.info('---------------------------------------------------')
-        logger.info('NEW REQUEST: Export Scps to Json')
+        logger.info('NEW REQUEST: Export Policies to Json')
         export_policies(file,org)
     elif usage == 'import-scps':
         logger.info('---------------------------------------------------')
