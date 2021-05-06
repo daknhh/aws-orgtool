@@ -238,8 +238,7 @@ def visualize_organization_graphviz(file,  org):
                                         logger.info(f"{fourlevel['Name']} has no No-Children")
                                         dot.node(f"{fivelevel['Id']}",  f"{fivelevel['Name']}", shape='box')
                                         dot.edge(f"{fourlevel['Id']}",  f"{fivelevel['Id']}")
-    dot.graph_attr['nodesep']='1.0'
-    #print(dot.source)
+    dot.graph_attr['nodesep'] = '1.0'
     dot.render('organization.gv',  view=True, format='png')
     f.close()
 
@@ -278,7 +277,7 @@ def export_policies(file,  org):
                 )
             content = responsepolicy['Policy']['Content']
             scpcontent = open(contentfile,  "w")
-            json.dump(json.loads(content),  scpcontent,  indent = 6)
+            json.dump(json.loads(content),  scpcontent,  indent=6)
             scpcontent.close()
             logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
             print(f'\n\nCreated SCP Content File: {contentfile} in scps directory 🗂.')
@@ -286,23 +285,21 @@ def export_policies(file,  org):
             logger.info(f'Add SCP {scp} to policies Dict.')
             print(f"Add SCP {scp['Name']} to policies Dict.")
         out_file = open(file,  "w")
-        json.dump(policies,  out_file,  indent = 6)
+        json.dump(policies,  out_file,  indent=6)
         out_file.close()
 
-    response = org.list_policies(
-    Filter='TAG_POLICY'
-    )
+    response = org.list_policies(Filter='TAG_POLICY')
     print("\n\n⌛️ Check if Tag Policies exist.")
     if response['Policies'] == []:
         print("ℹ️  No Tag Policies.")
     else:
         print("Exporting Tag Policies...")
         if os.path.isdir('policies/tag_policies'):
-            logger.info(f'tag_policies directory exist.')
+            logger.info('tag_policies directory exist.')
         else:
             os.mkdir('policies/tag_policies')
             print("\n Directory policies/tag_policies created")
-            logger.info(f' Directory policies/tag_policies created.')
+            logger.info(' Directory policies/tag_policies created.')
         for tag in tqdm(response['Policies']):
             contentfile = f"policies/tag_policies/{tag['Name']}.json"
 
@@ -311,7 +308,7 @@ def export_policies(file,  org):
                 )
             content = responsepolicy['Policy']['Content']
             tagcontent = open(contentfile,  "w")
-            json.dump(json.loads(content),  tagcontent,  indent = 6)
+            json.dump(json.loads(content),  tagcontent,  indent=6)
             tagcontent.close()
             logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
             print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
@@ -319,29 +316,25 @@ def export_policies(file,  org):
             logger.info(f'Add Tag {tag} to policies Dict.')
             print(f"Add Tag {tag['Name']} to policies Dict.")
 
-    response = org.list_policies(
-    Filter='BACKUP_POLICY'
-    )
+    response = org.list_policies(Filter='BACKUP_POLICY')
     print("\n\n⌛️ Check if Backup Policies exist.")
     if response['Policies'] == []:
         print("ℹ️ No Backup Policies.")
     else:
         print("Exporting Backup Policies...")
         if os.path.isdir('policies/backup_policies'):
-            logger.info(f'policies/backup_policies directory exist.')
+            logger.info('policies/backup_policies directory exist.')
         else:
             os.mkdir('policies/backup_policies')
             print("\n Directory policies/backup_policies created")
-            logger.info(f' Directory policies/backup_policies created.')
+            logger.info(' Directory policies/backup_policies created.')
         for policy in tqdm(response['Policies']):
             contentfile = f"policies/backup_policies/{policy['Name']}.json"
 
-            responsepolicy = org.describe_policy(
-                PolicyId=policy['Id']
-                )
+            responsepolicy = org.describe_policy(PolicyId=policy['Id'])
             content = responsepolicy['Policy']['Content']
             tagcontent = open(contentfile,  "w")
-            json.dump(json.loads(content),  tagcontent,  indent = 6)
+            json.dump(json.loads(content),  tagcontent,  indent=6)
             tagcontent.close()
             logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
             print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
@@ -349,20 +342,18 @@ def export_policies(file,  org):
             logger.info(f'Add Tag {policy} to policies Dict.')
             print(f"Add Tag {policy['Name']} to policies Dict.")
 
-    response = org.list_policies(
-    Filter='AISERVICES_OPT_OUT_POLICY'
-    )
+    response = org.list_policies(Filter='AISERVICES_OPT_OUT_POLICY')
     print("\n\n⌛️ Check if Backup Policies exist.")
     if response['Policies'] == []:
         print("ℹ️  No AI services opt-out Policies.")
     else:
         print("Exporting AI services opt-out Policies...")
         if os.path.isdir('policies/ai_services_opt_out_policies'):
-            logger.info(f'backup_policies directory exist.')
+            logger.info('backup_policies directory exist.')
         else:
             os.mkdir('policies/ai_services_opt_out_policies')
             print("\n Directory policies/ai_services_opt_out_policies created")
-            logger.info(f' Directory policies/ai_services_opt_out_policies created.')
+            logger.info(' Directory policies/ai_services_opt_out_policies created.')
         for policy in tqdm(response['Policies']):
             contentfile = f"policies/ai_services_opt_out_policies/{policy['Name']}.json"
 
@@ -371,7 +362,7 @@ def export_policies(file,  org):
                 )
             content = responsepolicy['Policy']['Content']
             tagcontent = open(contentfile,  "w")
-            json.dump(json.loads(content),  tagcontent,  indent = 6)
+            json.dump(json.loads(content),  tagcontent,  indent=6)
             tagcontent.close()
             logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
             print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
@@ -380,7 +371,7 @@ def export_policies(file,  org):
             print(f"Add Tag {policy['Name']} to policies Dict.")
 
     out_file = open(file,  "w")
-    json.dump(policies,  out_file,  indent = 6)
+    json.dump(policies,  out_file,  indent=6)
     out_file.close()
     logger.info(f'Created Policies File: {file}.')
     print("\n************************")
@@ -403,18 +394,17 @@ def import_policies(file,  org):
         data = json.load(f)
         try:
             response = org.create_policy(
-            Content=json.dumps(data),
-            Description=scp['Description'],
-            Name=scp['Name'],
-            Type='SERVICE_CONTROL_POLICY'
-            )
+                Content=json.dumps(data),
+                Description=scp['Description'],
+                Name=scp['Name'],
+                Type='SERVICE_CONTROL_POLICY')
             logger.info(f"Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
             print(f"\n\n✅ Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
         except org.exceptions.DuplicatePolicyException:
             logger.info(f"SCP with Name: {scp['Name']} - already exist.")
             print(f"\n\nℹ SCP with Name: {scp['Name']} - already exist. \n\n")
     print("\n************************")
-    print(f'✅ SCPs have been imported.')
+    print('✅ SCPs have been imported.')
 
 
 def validate_policies(file,  accessanalyzer):
@@ -425,17 +415,16 @@ def validate_policies(file,  accessanalyzer):
     print("Validate Policies \n")
 
     for scp in tqdm(data['Scps']):
-        print(f"\n------------------------------------------")
+        print("\n------------------------------------------")
         print(f"🔍 Findings for: \n{scp['Name']} SCP \n\n")
         logger.info(f"Validate SCP with Name: {scp['Name']}")
         response = accessanalyzer.validate_policy(
-        locale='EN',
-        policyDocument=scp['ContentFile'],
-        policyType='SERVICE_CONTROL_POLICY'
-        )
+            locale='EN',
+            policyDocument=scp['ContentFile'],
+            policyType='SERVICE_CONTROL_POLICY')
         for finding in response['findings']:
             if finding['findingDetails'] == 'Fix the JSON syntax error at index 0 line 1 column 0.':
-                print(f"🥳 No Finding.")
+                print("🥳 No Finding.")
             else:
                 if finding['findingType'] == 'ERROR':
                     findingtype = '❗️'
@@ -498,7 +487,7 @@ def get_ou_stucture(parent_id,  org):
                     for page in page_iterator2:
                         if page['OrganizationalUnits'] == []:
                             ou_thirdlevel = {'Children': 'No-Children'}
-                            logger.info(f'No-Children')
+                            logger.info('No-Children')
                             print(" - - - %s" % (ou3['Name']))
                         else:
                             logger.info(page['OrganizationalUnits'])
@@ -522,7 +511,7 @@ def get_ou_stucture(parent_id,  org):
                                 for page in page_iterator3:
                                     if page['OrganizationalUnits'] == []:
                                         ou_fivelevel = {'Children': 'No-Children'}
-                                        logger.info(f'No-Children')
+                                        logger.info('No-Children')
                                         print(" - - - - - %s" % (ou4['Name']))
                                     else:
                                         logger.info(page['OrganizationalUnits'])
@@ -546,7 +535,7 @@ def get_ou_stucture(parent_id,  org):
                                             for page in page_iterator4:
                                                 if page['OrganizationalUnits'] == []:
                                                     ou_sixlevel = {'Children': 'No-Children'}
-                                                    logger.info(f'No-Children')
+                                                    logger.info('No-Children')
                                                     print(" - - - - - %s" % (ou5['Name']))
                                                 else:
                                                     logger.info(page['OrganizationalUnits'])
@@ -588,9 +577,9 @@ def get_ou_stucture(parent_id,  org):
 def export_structure(file,  org):
     root_id = org.list_roots()['Roots'][0]['Id']
     logger.info('Query first level OUs')
-    ous= get_ou_stucture(root_id, org)
-    out_file = open(file,  "w")
-    json.dump(ous,  out_file,  indent = 6)
+    ous = get_ou_stucture(root_id, org)
+    out_file = open(file, "w")
+    json.dump(ous, out_file, indent=6)
     out_file.close()
     print("\n************************")
     logger.info(f'\n Write Ous to file: {file}')
@@ -600,13 +589,12 @@ def export_structure(file,  org):
 def get_scpforou(ou_id,  org):
     response = org.list_policies_for_target(
         TargetId=ou_id,
-        Filter='SERVICE_CONTROL_POLICY',
-    )
+        Filter='SERVICE_CONTROL_POLICY')
     scp = {}
     scp.setdefault('SCPs', [])
     for policy in response['Policies']:
         if policy['Name'] == 'FullAWSAccess':
-            logger.info(f'\n AWS SCP Found: FullAWSAccess')
+            logger.info('\n AWS SCP Found: FullAWSAccess')
         else:
             scp.setdefault('SCPs', []).append({'Name': policy['Name']})
     return scp
@@ -614,12 +602,10 @@ def get_scpforou(ou_id,  org):
 
 def get_all_scps(org):
     response = org.list_policies(
-    Filter='SERVICE_CONTROL_POLICY',
-    )
+        Filter='SERVICE_CONTROL_POLICY')
     allscps = ""
     for Scp in response['Policies']:
         allscps += f"\"{Scp['Name']}\": \"{Scp['Id']}\", "
-        #allscps.setdefault('SCPs',  []).append({Scp['Name']: Scp['Id']})
     allscps = allscps[:-1]
     allscpsstring = "{" + allscps + "}"
     convertedDict = json.loads(allscpsstring)
@@ -647,10 +633,9 @@ def attach_policies(file,  org):
             for scp in firstlevel['SCPs']:
                 policyid = scps_in_org.get(scp['Name'])
                 try:
-                    response = org.attach_policy(
-                    PolicyId=policyid,
-                    TargetId=firstlevelou_id,
-                    )
+                    org.attach_policy(
+                        PolicyId=policyid,
+                        TargetId=firstlevelou_id)
                     logger.info(f'Attached: {policyid} to {firstlevelou_id}')
                     print(f"✅ {scp['Name']} - {policyid}")
                 except org.exceptions.DuplicatePolicyAttachmentException:
@@ -671,10 +656,9 @@ def attach_policies(file,  org):
                         for scp in secondlevel['SCPs']:
                             policyid = scps_in_org.get(scp['Name'])
                             try:
-                                response = org.attach_policy(
-                                PolicyId=policyid,
-                                TargetId=secondlevelou_id,
-                                )
+                                org.attach_policy(
+                                    PolicyId=policyid,
+                                    TargetId=secondlevelou_id)
                                 logger.info(f'Attached: {policyid} to {secondlevelou_id}')
                                 print(f"✅ {scp['Name']} - {policyid}")
                             except org.exceptions.DuplicatePolicyAttachmentException:
@@ -694,10 +678,9 @@ def attach_policies(file,  org):
                                     for scp in thirdlevel['SCPs']:
                                         policyid = scps_in_org.get(scp['Name'])
                                         try:
-                                            response = org.attach_policy(
-                                            PolicyId=policyid,
-                                            TargetId=thirdlevelou_id,
-                                            )
+                                            org.attach_policy(
+                                                PolicyId=policyid,
+                                                TargetId=thirdlevelou_id)
                                             logger.info(f'Attached: {policyid} to {thirdlevelou_id}')
                                             print(f"✅ {scp['Name']} - {policyid}")
                                         except org.exceptions.DuplicatePolicyAttachmentException:
@@ -718,10 +701,9 @@ def attach_policies(file,  org):
                                             for scp in fourlevel['SCPs']:
                                                 policyid = scps_in_org.get(scp['Name'])
                                                 try:
-                                                    response = org.attach_policy(
-                                                    PolicyId=policyid,
-                                                    TargetId=fourlevelou_id,
-                                                    )
+                                                    org.attach_policy(
+                                                        PolicyId=policyid,
+                                                        TargetId=fourlevelou_id)
                                                     logger.info(f'Attached: {policyid} to {fourlevelou_id}')
                                                     print(f"✅ {scp['Name']} - {policyid}")
                                                 except org.exceptions.DuplicatePolicyAttachmentException:
@@ -858,8 +840,8 @@ def import_structure(file,  org):
                                         fivelevelou_id = get_ou_id_by_name(fivelevel['Name'], fourlevelou_id, org)
 
     f.close()
-    logger.info(f'\n OU Structure has been imported.')
-    logger.info(f'\n********************************')
+    logger.info('\n OU Structure has been imported.')
+    logger.info('\n********************************')
 
 
 def main(argv):
