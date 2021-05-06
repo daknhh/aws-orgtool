@@ -6,9 +6,9 @@ This Tool is to export your AWS Organizations structure, Policies to Json file a
 ![Example](static/orgtoolicon.jpeg)
 
 ## Tool info:
-|Version |Author  | 
+|Releases |Author  | 
 --- | --- |
-|1.0 | David Krohn </br> [Linkedin](https://www.linkedin.com/in/daknhh/) - [Blog](https://globaldatanet.com/blog/author/david-krohn)|
+| [Changelog](CHANGELOG.md) | David Krohn </br> [Linkedin](https://www.linkedin.com/in/daknhh/) - [Blog](https://globaldatanet.com/blog/author/david-krohn)|
 
 
 ## Usage
