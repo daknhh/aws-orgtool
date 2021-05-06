@@ -1,5 +1,5 @@
 [![License: CC BY-NC-SA 4.0](https://img.shields.io/badge/License-CC%20BY--NC--SA%204.0-lightgrey.svg)](http://creativecommons.org/licenses/by-nc-sa/4.0/)
-
+![Linting](https://github.com/daknhh/aws-orgtool/workflows/Linting/badge.svg)
 ## General info
 This Tool is to export your AWS Organizations structure, Policies to Json file and import structure, SCPs to another AWS Organization. During import and export a a log file is written so that the processes can be traced
 
