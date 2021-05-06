@@ -345,7 +345,7 @@ def export_policies(file,  org):
             tagcontent.close()
             logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
             print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
-            policies.setdefault('Tags',  []).append({'Id': policy['Id'], 'Name': policy['Name'], 'Description': policy['Description'], 'ContentFile': contentfile})
+            policies.setdefault('Backup',  []).append({'Id': policy['Id'], 'Name': policy['Name'], 'Description': policy['Description'], 'ContentFile': contentfile})
             logger.info(f'Add Tag {policy} to policies Dict.')
             print(f"Add Tag {policy['Name']} to policies Dict.")
 
@@ -375,16 +375,16 @@ def export_policies(file,  org):
             tagcontent.close()
             logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
             print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
-            policies.setdefault('Tags',  []).append({'Id': policy['Id'], 'Name': policy['Name'], 'Description': policy['Description'], 'ContentFile': contentfile})
+            policies.setdefault('AI',  []).append({'Id': policy['Id'], 'Name': policy['Name'], 'Description': policy['Description'], 'ContentFile': contentfile})
             logger.info(f'Add Tag {policy} to policies Dict.')
             print(f"Add Tag {policy['Name']} to policies Dict.")
 
-        out_file = open(file,  "w")
-        json.dump(policies,  out_file,  indent = 6)
-        out_file.close()
-        logger.info(f'Created Policies File: {file}.')
-        print("\n************************")
-        print(f'Policies have been written to File: {file} 🗃.')
+    out_file = open(file,  "w")
+    json.dump(policies,  out_file,  indent = 6)
+    out_file.close()
+    logger.info(f'Created Policies File: {file}.')
+    print("\n************************")
+    print(f'Policies have been written to File: {file} 🗃.')
 
 
 def import_policies(file,  org):
