@@ -250,19 +250,28 @@ def export_policies(file,  org):
         Filter='SERVICE_CONTROL_POLICY')
     logger.info('Inititalize Dict for Policies')
     policies = {}
+
+    if os.path.isdir('policies'):
+        logger.info('policies directory exist.')
+    else:
+        os.mkdir('policies')
+        print("\nDirectory policies created")
+        logger.info('Directory policies created.')
+
+    print("\n\n⌛️ Check if SCPs exist.")
     if response['Policies'] == []:
-        print("\n\nℹ️ No SCPs.")
+        print("ℹ️ No SCPs.")
         logger.info('No SCPs.')
     else:
-        print("\n\n Exporting SCPs.")
-        if os.path.isdir('scps'):
-            logger.info('scps directory exist.')
+        print("Exporting SCPs...")
+        if os.path.isdir('policies/scp'):
+            logger.info('scp directory exist.')
         else:
-            os.mkdir('scps')
-            print("\nDirectory scps created")
-            logger.info('Directory scps created.')
+            os.mkdir('policies/scp')
+            print("\nDirectory policies/scp created")
+            logger.info('Directory policies/scp created.')
         for scp in tqdm(response['Policies']):
-            contentfile = f"scps/{scp['Name']}.json"
+            contentfile = f"policies/scp/{scp['Name']}.json"
 
             responsepolicy = org.describe_policy(
                 PolicyId=scp['Id']
@@ -283,18 +292,19 @@ def export_policies(file,  org):
     response = org.list_policies(
     Filter='TAG_POLICY'
     )
+    print("\n\n⌛️ Check if Tag Policies exist.")
     if response['Policies'] == []:
-        print("\n\nℹ️ No Tag Policies.")
+        print("ℹ️  No Tag Policies.")
     else:
-        print("\n\nExporting Tag Policies.")
-        if os.path.isdir('tags'):
-            logger.info(f'tags directory exist.')
+        print("Exporting Tag Policies...")
+        if os.path.isdir('policies/tag_policies'):
+            logger.info(f'tag_policies directory exist.')
         else:
-            os.mkdir('tags')
-            print("\n Directory tags created")
-            logger.info(f' Directory scps created.')
+            os.mkdir('policies/tag_policies')
+            print("\n Directory policies/tag_policies created")
+            logger.info(f' Directory policies/tag_policies created.')
         for tag in tqdm(response['Policies']):
-            contentfile = f"tags/{tag['Name']}.json"
+            contentfile = f"policies/tag_policies/{tag['Name']}.json"
 
             responsepolicy = org.describe_policy(
                 PolicyId=tag['Id']
@@ -308,6 +318,67 @@ def export_policies(file,  org):
             policies.setdefault('Tags',  []).append({'Id': tag['Id'], 'Name': scp['Name'], 'Description': scp['Description'], 'ContentFile': contentfile})
             logger.info(f'Add Tag {tag} to policies Dict.')
             print(f"Add Tag {tag['Name']} to policies Dict.")
+
+    response = org.list_policies(
+    Filter='BACKUP_POLICY'
+    )
+    print("\n\n⌛️ Check if Backup Policies exist.")
+    if response['Policies'] == []:
+        print("ℹ️ No Backup Policies.")
+    else:
+        print("Exporting Backup Policies...")
+        if os.path.isdir('policies/backup_policies'):
+            logger.info(f'policies/backup_policies directory exist.')
+        else:
+            os.mkdir('policies/backup_policies')
+            print("\n Directory policies/backup_policies created")
+            logger.info(f' Directory policies/backup_policies created.')
+        for policy in tqdm(response['Policies']):
+            contentfile = f"policies/backup_policies/{policy['Name']}.json"
+
+            responsepolicy = org.describe_policy(
+                PolicyId=policy['Id']
+                )
+            content = responsepolicy['Policy']['Content']
+            tagcontent = open(contentfile,  "w")
+            json.dump(json.loads(content),  tagcontent,  indent = 6)
+            tagcontent.close()
+            logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
+            print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
+            policies.setdefault('Tags',  []).append({'Id': policy['Id'], 'Name': policy['Name'], 'Description': policy['Description'], 'ContentFile': contentfile})
+            logger.info(f'Add Tag {policy} to policies Dict.')
+            print(f"Add Tag {policy['Name']} to policies Dict.")
+
+    response = org.list_policies(
+    Filter='AISERVICES_OPT_OUT_POLICY'
+    )
+    print("\n\n⌛️ Check if Backup Policies exist.")
+    if response['Policies'] == []:
+        print("ℹ️  No AI services opt-out Policies.")
+    else:
+        print("Exporting AI services opt-out Policies...")
+        if os.path.isdir('policies/ai_services_opt_out_policies'):
+            logger.info(f'backup_policies directory exist.')
+        else:
+            os.mkdir('policies/ai_services_opt_out_policies')
+            print("\n Directory policies/ai_services_opt_out_policies created")
+            logger.info(f' Directory policies/ai_services_opt_out_policies created.')
+        for policy in tqdm(response['Policies']):
+            contentfile = f"policies/ai_services_opt_out_policies/{policy['Name']}.json"
+
+            responsepolicy = org.describe_policy(
+                PolicyId=policy['Id']
+                )
+            content = responsepolicy['Policy']['Content']
+            tagcontent = open(contentfile,  "w")
+            json.dump(json.loads(content),  tagcontent,  indent = 6)
+            tagcontent.close()
+            logger.info(f'Created Tag Content File: {contentfile} in tags directory 🗂.')
+            print(f'\n\nCreated Tag Content File: {contentfile} in tags directory 🗂.')
+            policies.setdefault('Tags',  []).append({'Id': policy['Id'], 'Name': policy['Name'], 'Description': policy['Description'], 'ContentFile': contentfile})
+            logger.info(f'Add Tag {policy} to policies Dict.')
+            print(f"Add Tag {policy['Name']} to policies Dict.")
+
         out_file = open(file,  "w")
         json.dump(policies,  out_file,  indent = 6)
         out_file.close()
