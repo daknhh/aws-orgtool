@@ -11,9 +11,9 @@
 ### Changed
 
 * Changed instructions for export-policies
-* Changed structure for policie directorys
+* Changed structure for policy directorys
 
 ### Removed
-
+* scps directory
 
 
