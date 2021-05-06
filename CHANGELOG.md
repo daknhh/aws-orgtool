@@ -6,11 +6,12 @@
 
 ### Added
 
-* Export of Tag Policies
+* Export of Tag, Backup and AI services opt-out Policies
 
 ### Changed
 
 * Changed instructions for export-policies
+* Changed structure for policie directorys
 
 ### Removed
 
