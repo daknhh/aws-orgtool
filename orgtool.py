@@ -864,7 +864,7 @@ def import_structure(file,  org):
 
 def main(argv):
     print('------------------------------------------------------------------------------')
-    print('ORGTOOL for: \n exporting and importing AWS organizations structure and SCPs to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
+    print('ORGTOOL for: \n exporting and importing AWS organizations structure and Policies to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
     print('------------------------------------------------------------------------------')
     try:
         opts,  args = getopt.getopt(argv, "hu:f:p:", ["u=", "f=", "p="])
