@@ -386,143 +386,161 @@ def import_policies(file,  org):
 
     logger.info(f'Import Json file: {file}')
     f = open(file, )
-    data = json.load(f)
+    alldata = json.load(f)
     print("\n************************")
     print("\nImport-Policies:")
-
     print("\n\n⌛️ Check if SCPs to import.")
     key = 'Scps'
-    if key in data:
+    if key in alldata:
+        currentscps = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='SERVICE_CONTROL_POLICY').get("Policies", [])}
         print("\nImport-SCPs:")
-        for scp in tqdm(data['Scps']):
+        for scp in tqdm(alldata['Scps']):
             print(f"- {scp['Name']}")
             f = open(scp['ContentFile'], )
             print(f"  - Import Json file: {scp['ContentFile']}.")
             logger.info(f"Import Json file: {scp['ContentFile']}.")
             data = json.load(f)
-            try:
-                response = org.create_policy(
-                    Content=json.dumps(data),
-                    Description=scp['Description'],
-                    Name=scp['Name'],
-                    Type='SERVICE_CONTROL_POLICY')
-                logger.info(f"Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
-                print(f"\n\n✅ Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
-            except org.exceptions.DuplicatePolicyException as e:
-                print(f"SCP with Name: {scp['Name']} - already exist - Updating Policy: {e}")
-            #try:
-            #    response = org.update_policy(
-            #        Content=json.dumps(data),
-            #        Description=scp['Description'],
-            #        Name=scp['Name'],
-            #        Type='SERVICE_CONTROL_POLICY')
-            #    print(f"\n\nℹ SCP with Name: {scp['Name']} - already exist - ✅ Policy was updated. \n\n")
-            #except org.exceptions as e:
-            #    logger.info(f"Error: {e} while updating SCP: {scp['Name']}.")
-            #    print(f"\n\n🚨 Error: {e} while updating SCP: {scp['Name']}.\n\n")
+            scp_id = currentscps.get(scp['Name'])
+            if scp_id:
+                try:
+                    response = org.update_policy(
+                        Content=json.dumps(data),
+                        Description=scp['Description'],
+                        Name=scp['Name'],
+                        PolicyId=scp_id)
+                    print(f"\n\nℹ SCP with Name: {scp['Name']} - already exist - ✅ Policy was updated. \n\n")
+                except org.exceptions as e:
+                    logger.info(f"Error: {e} while updating SCP: {scp['Name']}.")
+                    print(f"\n\n🚨 Error: {e} while updating SCP: {scp['Name']}.\n\n")
+            else:
+                try:
+                    response = org.create_policy(
+                        Content=json.dumps(data),
+                        Description=scp['Description'],
+                        Name=scp['Name'],
+                        Type='SERVICE_CONTROL_POLICY')
+                    logger.info(f"Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
+                    print(f"\n\n✅ Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
+                except org.exceptions as e:
+                    logger.info(f"Error: {e} while creating SCP: {scp['Name']}.")
+                    print(f"\n\n🚨 Error: {e} while creating SCP: {scp['Name']}.\n\n")
         print('\n ✅ SCPs have been imported.')
     else:
         print(" ℹ️ No SCPs to import.")
-
     print("\n\n⌛️ Check if Tag Policies to import.")
     key = 'Tags'
-    if key in data:
+    if key in alldata:
+        currenttags = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='TAG_POLICY').get("Policies", [])}
         print("\nImport-Tag Policies:")
-        for policy in tqdm(data['Tags']):
+        for policy in tqdm(alldata['Tags']):
             print(f"- {policy['Name']}")
             f = open(policy['ContentFile'], )
             print(f"  - Import Json file: {policy['ContentFile']}.")
             logger.info(f"Import Json file: {policy['ContentFile']}.")
             data = json.load(f)
-            try:
-                response = org.create_policy(
-                    Content=json.dumps(data),
-                    Description=policy['Description'],
-                    Name=policy['Name'],
-                    Type='TAG_POLICY')
-                logger.info(f"Created Tag Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
-                print(f"\n\n✅ Created Tag Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
-            except org.exceptions.DuplicatePolicyException:
-                logger.info(f"Tag Policy with Name: {policy['Name']} - already exist - Updating Policy")
-            try:
-                response = org.update_policy(
-                    Content=json.dumps(data),
-                    Description=policy['Description'],
-                    Name=policy['Name'],
-                    Type='TAG_POLICY')
-                print(f"\n\nℹ Tag Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
-            except org.exceptions as e:
-                logger.info(f"Error: {e} while updating Tag Policy: {policy['Name']}.")
-                print(f"\n\n🚨 Error: {e} while updating Tag Policy: {policy['Name']}.\n\n")
+            tag_id = currenttags.get(policy['Name'])
+            if tag_id:
+                try:
+                    response = org.update_policy(
+                        Content=json.dumps(data),
+                        Description=policy['Description'],
+                        Name=policy['Name'],
+                        PolicyId=tag_id)
+                    print(f"\n\nℹ Tag Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
+                except org.exceptions as e:
+                    logger.info(f"Error: {e} while updating Tag Policy: {policy['Name']}.")
+                    print(f"\n\n🚨 Error: {e} while updating Tag Policy: {policy['Name']}.\n\n")
+            else:
+                try:
+                    response = org.create_policy(
+                        Content=json.dumps(data),
+                        Description=policy['Description'],
+                        Name=policy['Name'],
+                        Type='TAG_POLICY')
+                    logger.info(f"Created Tag Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
+                    print(f"\n\n✅ Created Tag Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
+                except org.exceptions as e:
+                    logger.info(f"Error: {e} while creating Tag Policy: {policy['Name']}.")
+                    print(f"\n\n🚨 Error: {e} while creating Tag Policy: {policy['Name']}.\n\n")
         print('\n ✅ Tag Policies have been imported.')
     else:
         print(" ℹ️  No Tag Policies to import.")
     print("\n\n⌛️ Check if Backup Policies to import.")
     key = 'Backup'
-    if key in data:
+    if key in alldata:
+        currentbackup = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='BACKUP_POLICY').get("Policies", [])}
         print("\nImport Backup Policies:")
-        for policy in tqdm(data['Backup']):
+        for policy in tqdm(alldata['Backup']):
             print(f"- {policy['Name']}")
             f = open(policy['ContentFile'], )
             print(f"  - Import Json file: {policy['ContentFile']}.")
             logger.info(f"Import Json file: {policy['ContentFile']}.")
             data = json.load(f)
-            try:
-                response = org.create_policy(
-                    Content=json.dumps(data),
-                    Description=policy['Description'],
-                    Name=policy['Name'],
-                    Type='BACKUP_POLICY')
-                logger.info(f"Created Backup Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
-                print(f"\n\n✅ Created Backup Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
-            except org.exceptions.DuplicatePolicyException:
-                logger.info(f"Backup Policy with Name: {policy['Name']} - already exist - Updating Policy")
-            try:
-                response = org.update_policy(
-                    Content=json.dumps(data),
-                    Description=policy['Description'],
-                    Name=policy['Name'],
-                    Type='BACKUP_POLICY')
-                print(f"\n\nℹ Backup Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
-            except org.exceptions as e:
-                logger.info(f"Error: {e} while updating Backup Policy: {policy['Name']}.")
-                print(f"\n\n🚨 Error: {e} while updating Backup Policy: {policy['Name']}.\n\n")
+            backup_id = currentbackup.get(policy['Name'])
+            if backup_id:
+                try:
+                    response = org.update_policy(
+                        Content=json.dumps(data),
+                        Description=policy['Description'],
+                        Name=policy['Name'],
+                        PolicyId=backup_id)
+                    print(f"\n\nℹ Tag Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
+                except org.exceptions as e:
+                    logger.info(f"Error: {e} while updating Backup Policy: {policy['Name']}.")
+                    print(f"\n\n🚨 Error: {e} while updating Backup Policy: {policy['Name']}.\n\n")
+            else:
+                try:
+                    response = org.create_policy(
+                        Content=json.dumps(data),
+                        Description=policy['Description'],
+                        Name=policy['Name'],
+                        Type='BACKUP_POLICY')
+                    logger.info(f"Created Backup Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
+                    print(f"\n\n✅ Created Backup Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
+                except org.exceptions as e:
+                    logger.info(f"Error: {e} while creating Backup Policy: {policy['Name']}.")
+                    print(f"\n\n🚨 Error: {e} while creating Backup Policy: {policy['Name']}.\n\n")
         print('\n ✅ Backup Policies have been imported.')
     else:
         print(" ℹ️  No Backup Policies to import.")
     print("\n\n⌛️ Check if AI services opt-out Policies to import.")
     key = 'AI'
-    if key in data:
+    if key in alldata:
+        currentais = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='AISERVICES_OPT_OUT_POLICY').get("Policies", [])}
         print("\nImport AI services opt-out Policies:")
-        for policy in tqdm(data['AI']):
+        for policy in tqdm(alldata['AI']):
             print(f"- {policy['Name']}")
             f = open(policy['ContentFile'], )
             print(f"  - Import Json file: {policy['ContentFile']}.")
             logger.info(f"Import Json file: {policy['ContentFile']}.")
             data = json.load(f)
-            try:
-                response = org.create_policy(
-                    Content=json.dumps(data),
-                    Description=policy['Description'],
-                    Name=policy['Name'],
-                    Type='AISERVICES_OPT_OUT_POLICY')
-                logger.info(f"Created AI services opt-out Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
-                print(f"\n\n✅ Created AI services opt-out Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
-            except org.exceptions.DuplicatePolicyException:
-                logger.info(f"AI services opt-out Policy with Name: {policy['Name']} - already exist - Updating Policy")
-            try:
-                response = org.update_policy(
-                    Content=json.dumps(data),
-                    Description=policy['Description'],
-                    Name=policy['Name'],
-                    Type='AISERVICES_OPT_OUT_POLICY')
-                print(f"\n\nℹ AI services opt-out Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
-            except org.exceptions as e:
-                logger.info(f"Error: {e} while updating AI services opt-out Policy: {policy['Name']}.")
-                print(f"\n\n🚨 Error: {e} while updating AI services opt-out Policy: {policy['Name']}.\n\n")
+            ai_id = currentais.get(policy['Name'])
+            if ai_id:
+                try:
+                    response = org.update_policy(
+                        Content=json.dumps(data),
+                        Description=policy['Description'],
+                        Name=policy['Name'],
+                        PolicyId=ai_id)
+                    print(f"\n\nℹ AI services opt-out Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
+                except org.exceptions as e:
+                    logger.info(f"Error: {e} while updating AI services opt-out Policy: {policy['Name']}.")
+                    print(f"\n\n🚨 Error: {e} while updating AI services opt-out Policy: {policy['Name']}.\n\n")
+            else:
+                try:
+                    response = org.create_policy(
+                        Content=json.dumps(data),
+                        Description=policy['Description'],
+                        Name=policy['Name'],
+                        Type='AISERVICES_OPT_OUT_POLICY')
+                    logger.info(f"Created AI services opt-out Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
+                    print(f"\n\n✅ Created AI services opt-out Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
+                except org.exceptions as e:
+                    logger.info(f"Error: {e} while creating AI services opt-out Policy: {policy['Name']}.")
+                    print(f"\n\n🚨 Error: {e} while creating AI services opt-out Policy: {policy['Name']}.\n\n")
         print('\n ✅ AI services opt-out Policies have been imported.')
     else:
-        print(" ℹ️  No Backup Policies to import.")
+        print(" ℹ️  AI services opt-out Policies to import.")
     print("\n************************")
 
 
