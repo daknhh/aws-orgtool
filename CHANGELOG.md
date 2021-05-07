@@ -7,7 +7,9 @@
 ### Added
 
 * Export of Tag, Backup and AI services opt-out Policies
-
+* Import of Tag, Backup and AI services opt-out Policies
+* Update Policies while import if they already exist
+* Linting using flake8
 ### Changed
 
 * Changed instructions for export-policies

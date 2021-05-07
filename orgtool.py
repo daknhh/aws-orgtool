@@ -270,20 +270,24 @@ def export_policies(file,  org):
             print("\nDirectory policies/scp created")
             logger.info('Directory policies/scp created.')
         for scp in tqdm(response['Policies']):
-            contentfile = f"policies/scp/{scp['Name']}.json"
+            if scp['Name'] == 'FullAWSAccess':
+                print("\n FullAWSAccess default SCP")
+                logger.info('FullAWSAccess default SCP')
+            else:
+                contentfile = f"policies/scp/{scp['Name']}.json"
 
-            responsepolicy = org.describe_policy(
-                PolicyId=scp['Id']
-                )
-            content = responsepolicy['Policy']['Content']
-            scpcontent = open(contentfile,  "w")
-            json.dump(json.loads(content),  scpcontent,  indent=6)
-            scpcontent.close()
-            logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
-            print(f'\n\nCreated SCP Content File: {contentfile} in scps directory 🗂.')
-            policies.setdefault('Scps',  []).append({'Id': scp['Id'], 'Name': scp['Name'], 'Description': scp['Description'], 'ContentFile': contentfile})
-            logger.info(f'Add SCP {scp} to policies Dict.')
-            print(f"Add SCP {scp['Name']} to policies Dict.")
+                responsepolicy = org.describe_policy(
+                    PolicyId=scp['Id']
+                    )
+                content = responsepolicy['Policy']['Content']
+                scpcontent = open(contentfile,  "w")
+                json.dump(json.loads(content),  scpcontent,  indent=6)
+                scpcontent.close()
+                logger.info(f'Created SCP Content File: {contentfile} in scps directory 🗂.')
+                print(f'\n\nCreated SCP Content File: {contentfile} in scps directory 🗂.')
+                policies.setdefault('Scps',  []).append({'Id': scp['Id'], 'Name': scp['Name'], 'Description': scp['Description'], 'ContentFile': contentfile})
+                logger.info(f'Add SCP {scp} to policies Dict.')
+                print(f"Add SCP {scp['Name']} to policies Dict.")
         out_file = open(file,  "w")
         json.dump(policies,  out_file,  indent=6)
         out_file.close()
@@ -384,27 +388,146 @@ def import_policies(file,  org):
     f = open(file, )
     data = json.load(f)
     print("\n************************")
-    print("\nImport-SCPs:")
+    print("\nImport-Policies:")
 
-    for scp in tqdm(data['Scps']):
-        print(f"- {scp['Name']}")
-        f = open(scp['ContentFile'], )
-        print(f"  - Import Json file: {scp['ContentFile']}.")
-        logger.info(f"Import Json file: {scp['ContentFile']}.")
-        data = json.load(f)
-        try:
-            response = org.create_policy(
-                Content=json.dumps(data),
-                Description=scp['Description'],
-                Name=scp['Name'],
-                Type='SERVICE_CONTROL_POLICY')
-            logger.info(f"Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
-            print(f"\n\n✅ Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
-        except org.exceptions.DuplicatePolicyException:
-            logger.info(f"SCP with Name: {scp['Name']} - already exist.")
-            print(f"\n\nℹ SCP with Name: {scp['Name']} - already exist. \n\n")
+    print("\n\n⌛️ Check if SCPs to import.")
+    key = 'Scps'
+    if key in data:
+        print("\nImport-SCPs:")
+        for scp in tqdm(data['Scps']):
+            print(f"- {scp['Name']}")
+            f = open(scp['ContentFile'], )
+            print(f"  - Import Json file: {scp['ContentFile']}.")
+            logger.info(f"Import Json file: {scp['ContentFile']}.")
+            data = json.load(f)
+            try:
+                response = org.create_policy(
+                    Content=json.dumps(data),
+                    Description=scp['Description'],
+                    Name=scp['Name'],
+                    Type='SERVICE_CONTROL_POLICY')
+                logger.info(f"Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
+                print(f"\n\n✅ Created SCP with Name: {scp['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
+            except org.exceptions.DuplicatePolicyException as e:
+                print(f"SCP with Name: {scp['Name']} - already exist - Updating Policy: {e}")
+            #try:
+            #    response = org.update_policy(
+            #        Content=json.dumps(data),
+            #        Description=scp['Description'],
+            #        Name=scp['Name'],
+            #        Type='SERVICE_CONTROL_POLICY')
+            #    print(f"\n\nℹ SCP with Name: {scp['Name']} - already exist - ✅ Policy was updated. \n\n")
+            #except org.exceptions as e:
+            #    logger.info(f"Error: {e} while updating SCP: {scp['Name']}.")
+            #    print(f"\n\n🚨 Error: {e} while updating SCP: {scp['Name']}.\n\n")
+        print('\n ✅ SCPs have been imported.')
+    else:
+        print(" ℹ️ No SCPs to import.")
+
+    print("\n\n⌛️ Check if Tag Policies to import.")
+    key = 'Tags'
+    if key in data:
+        print("\nImport-Tag Policies:")
+        for policy in tqdm(data['Tags']):
+            print(f"- {policy['Name']}")
+            f = open(policy['ContentFile'], )
+            print(f"  - Import Json file: {policy['ContentFile']}.")
+            logger.info(f"Import Json file: {policy['ContentFile']}.")
+            data = json.load(f)
+            try:
+                response = org.create_policy(
+                    Content=json.dumps(data),
+                    Description=policy['Description'],
+                    Name=policy['Name'],
+                    Type='TAG_POLICY')
+                logger.info(f"Created Tag Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
+                print(f"\n\n✅ Created Tag Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
+            except org.exceptions.DuplicatePolicyException:
+                logger.info(f"Tag Policy with Name: {policy['Name']} - already exist - Updating Policy")
+            try:
+                response = org.update_policy(
+                    Content=json.dumps(data),
+                    Description=policy['Description'],
+                    Name=policy['Name'],
+                    Type='TAG_POLICY')
+                print(f"\n\nℹ Tag Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
+            except org.exceptions as e:
+                logger.info(f"Error: {e} while updating Tag Policy: {policy['Name']}.")
+                print(f"\n\n🚨 Error: {e} while updating Tag Policy: {policy['Name']}.\n\n")
+        print('\n ✅ Tag Policies have been imported.')
+    else:
+        print(" ℹ️  No Tag Policies to import.")
+
+
+    print("\n\n⌛️ Check if Backup Policies to import.")
+    key = 'Backup'
+    if key in data:
+        print("\nImport Backup Policies:")
+        for policy in tqdm(data['Backup']):
+            print(f"- {policy['Name']}")
+            f = open(policy['ContentFile'], )
+            print(f"  - Import Json file: {policy['ContentFile']}.")
+            logger.info(f"Import Json file: {policy['ContentFile']}.")
+            data = json.load(f)
+            try:
+                response = org.create_policy(
+                    Content=json.dumps(data),
+                    Description=policy['Description'],
+                    Name=policy['Name'],
+                    Type='BACKUP_POLICY')
+                logger.info(f"Created Backup Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
+                print(f"\n\n✅ Created Backup Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
+            except org.exceptions.DuplicatePolicyException:
+                logger.info(f"Backup Policy with Name: {policy['Name']} - already exist - Updating Policy")
+            try:
+                response = org.update_policy(
+                    Content=json.dumps(data),
+                    Description=policy['Description'],
+                    Name=policy['Name'],
+                    Type='BACKUP_POLICY')
+                print(f"\n\nℹ Backup Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
+            except org.exceptions as e:
+                logger.info(f"Error: {e} while updating Backup Policy: {policy['Name']}.")
+                print(f"\n\n🚨 Error: {e} while updating Backup Policy: {policy['Name']}.\n\n")
+        print('\n ✅ Backup Policies have been imported.')
+    else:
+        print(" ℹ️  No Backup Policies to import.")
+
+
+    print("\n\n⌛️ Check if AI services opt-out Policies to import.")
+    key = 'AI'
+    if key in data:
+        print("\nImport AI services opt-out Policies:")
+        for policy in tqdm(data['AI']):
+            print(f"- {policy['Name']}")
+            f = open(policy['ContentFile'], )
+            print(f"  - Import Json file: {policy['ContentFile']}.")
+            logger.info(f"Import Json file: {policy['ContentFile']}.")
+            data = json.load(f)
+            try:
+                response = org.create_policy(
+                    Content=json.dumps(data),
+                    Description=policy['Description'],
+                    Name=policy['Name'],
+                    Type='AISERVICES_OPT_OUT_POLICY')
+                logger.info(f"Created AI services opt-out Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}.")
+                print(f"\n\n✅ Created AI services opt-out Policy with Name: {policy['Name']} - Id: {response['Policy']['PolicySummary']['Id']}. \n\n")
+            except org.exceptions.DuplicatePolicyException:
+                logger.info(f"AI services opt-out Policy with Name: {policy['Name']} - already exist - Updating Policy")
+            try:
+                response = org.update_policy(
+                    Content=json.dumps(data),
+                    Description=policy['Description'],
+                    Name=policy['Name'],
+                    Type='AISERVICES_OPT_OUT_POLICY')
+                print(f"\n\nℹ AI services opt-out Policy with Name: {policy['Name']} - already exist - ✅ Policy was updated. \n\n")
+            except org.exceptions as e:
+                logger.info(f"Error: {e} while updating AI services opt-out Policy: {policy['Name']}.")
+                print(f"\n\n🚨 Error: {e} while updating AI services opt-out Policy: {policy['Name']}.\n\n")
+        print('\n ✅ AI services opt-out Policies have been imported.')
+    else:
+        print(" ℹ️  No Backup Policies to import.")
     print("\n************************")
-    print('✅ SCPs have been imported.')
 
 
 def validate_policies(file,  accessanalyzer):
@@ -843,7 +966,6 @@ def import_structure(file,  org):
     logger.info('\n OU Structure has been imported.')
     logger.info('\n********************************')
 
-
 def main(argv):
     print('------------------------------------------------------------------------------')
     print('ORGTOOL for: \n exporting and importing AWS organizations structure and Policies to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
@@ -855,7 +977,7 @@ def main(argv):
         print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
         print('Export SCPs: orgtool.py -u export-scps -p AWSPROFILE')
         print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
-        print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
+        print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE')
         print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
         print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
         print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE')
@@ -866,7 +988,7 @@ def main(argv):
             print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
             print('Export Policies: orgtool.py -u export-policies -f <file.json> -p AWSPROFILE')
             print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
-            print('Import SCPs: orgtool.py -u import-scps -f <file.json> -p AWSPROFILE')
+            print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE')
             print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
             print('Attach SCPs: orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE')
             print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
@@ -900,9 +1022,9 @@ def main(argv):
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Export Policies to Json')
         export_policies(file, org)
-    elif usage == 'import-scps':
+    elif usage == 'import-policies':
         logger.info('---------------------------------------------------')
-        logger.info('NEW REQUEST: Import Scps from Json')
+        logger.info('NEW REQUEST: Import Policies from Json')
         import_policies(file, org)
     elif usage == 'validate-scps':
         logger.info('---------------------------------------------------')
@@ -920,7 +1042,7 @@ def main(argv):
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: visualize Organization with diagrams.net from Json')
         visualize_organization_diagrams(file, org)
-    print('ℹ️: logs can be found in orgtool.log')
+    print('ℹ️ logs can be found in orgtool.log')
 
 
 if __name__ == "__main__":

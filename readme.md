@@ -18,11 +18,11 @@ This Tool is to export your AWS Organizations structure, Policies to Json file a
 
 #### Import: `orgtool.py -u import -f <file.json> -p AWSPROFILE `
 ### Policies:
+
 #### Export: `orgtool.py -u export-policies -f <file.json> -p AWSPROFILE`
 
+#### Import: `orgtool.py -u import-policies -f <file.json> -p AWSPROFILE`
 ### SCPs:
-
-#### Import: `orgtool.py -u import-scps -f <file.json> -p AWSPROFILE`
 
 #### Attach-SCPs: `orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE`
 #### Validate-SCPs: `orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE` 
