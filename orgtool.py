@@ -457,8 +457,6 @@ def import_policies(file,  org):
         print('\n ✅ Tag Policies have been imported.')
     else:
         print(" ℹ️  No Tag Policies to import.")
-
-
     print("\n\n⌛️ Check if Backup Policies to import.")
     key = 'Backup'
     if key in data:
@@ -492,8 +490,6 @@ def import_policies(file,  org):
         print('\n ✅ Backup Policies have been imported.')
     else:
         print(" ℹ️  No Backup Policies to import.")
-
-
     print("\n\n⌛️ Check if AI services opt-out Policies to import.")
     key = 'AI'
     if key in data:
@@ -965,6 +961,7 @@ def import_structure(file,  org):
     f.close()
     logger.info('\n OU Structure has been imported.')
     logger.info('\n********************************')
+
 
 def main(argv):
     print('------------------------------------------------------------------------------')
