@@ -1,6 +1,6 @@
 # Change Log
 
-## Unreleased
+## Released
 
 ## 1.0.1
 
@@ -17,5 +17,8 @@
 
 ### Removed
 * scps directory
+
+## Unreleased
+
 
 
