@@ -1,0 +1,7 @@
+*.csv
+*.json
+*.log
+*.pdf
+*.png
+*.svg
+*.DS_store
