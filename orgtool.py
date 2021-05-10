@@ -347,7 +347,7 @@ def export_policies(file,  org):
             print(f"Add Tag {policy['Name']} to policies Dict.")
 
     response = org.list_policies(Filter='AISERVICES_OPT_OUT_POLICY')
-    print("\n\n⌛️ Check if Backup Policies exist.")
+    print("\n\n⌛️ Check if AI services opt-out exist.")
     if response['Policies'] == []:
         print("ℹ️  No AI services opt-out Policies.")
     else:
