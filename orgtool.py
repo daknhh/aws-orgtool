@@ -743,7 +743,8 @@ def get_all_scps(org):
     allscps = ""
     for Scp in response['Policies']:
         allscps += f"\"{Scp['Name']}\": \"{Scp['Id']}\", "
-    allscps = allscps[:-1]
+    l = len(allscps)
+    allscps = allscps[:l-2]
     allscpsstring = "{" + allscps + "}"
     convertedDict = json.loads(allscpsstring)
     return convertedDict
