@@ -1,0 +1,22 @@
+name: Security check - Bandit
+
+on: push
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ ubuntu-latest]
+        python-version: 3.9
+    name: Python ${{ matrix.python-version }} 
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Security check - Bandit
+      uses: ./
+      with:
+        python_version: ${{ matrix.python-version }}
+        project_path: orgtool.py
+        ignore_failure: true
