@@ -11,9 +11,9 @@ jobs:
         uses: actions/setup-python@v2
         with:
           python-version: 3.9
-    - name: Security check - Bandit
-      uses: ./
-      with:
-        python_version: ${{ matrix.python-version }}
-        project_path: orgtool.py
-        ignore_failure: true
+      - name: Security check - Bandit
+        uses: ./
+        with:
+          python_version: ${{ matrix.python-version }}
+          project_path: orgtool.py
+          ignore_failure: true
