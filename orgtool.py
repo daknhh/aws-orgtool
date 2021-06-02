@@ -590,7 +590,8 @@ def get_ou_stucture(parent_id,  org):
     print("\n************************")
     print("\nOrganization-Structure: ")
     print("%s" % (parent_id))
-
+    policies = get_policies(parent_id, org)
+    ous.setdefault('root',  []).append({'Id': parent_id, 'Name': 'root', 'SCP': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'] })
     for page in page_iterator:
         for ou in page['OrganizationalUnits']:
             logger.info(f'Inititalize Dict for {ou}')
@@ -599,7 +600,7 @@ def get_ou_stucture(parent_id,  org):
         page_iterator = paginator.paginate(ParentId=ou['Id'])
         logger.info(f'Check {ou} for Children')
         for page in page_iterator:
-            scp = get_scpforou(ou['Id'], org)
+            policies = get_policies(ou['Id'], org)
             if page['OrganizationalUnits'] == []:
                 ou_secondlevel = {'Children': 'No-Children'}
                 print(" - %s" % (ou['Name']))
@@ -607,8 +608,8 @@ def get_ou_stucture(parent_id,  org):
                 print(" - %s" % (ou['Name']))
                 for ou_2l in page['OrganizationalUnits']:
                     print(" - - %s" % (ou_2l['Name']))
-                    ou_secondlevel.setdefault('Children',  []).append({'Id': ou_2l['Id'], 'Name': ou_2l['Name'], 'SCP': scp, 'Children': {}})
-            ous['Ous'][idx] = {'Id': ou['Id'], 'Name': ou['Name'], 'SCPs': scp['SCPs'], 'Children': ou_secondlevel['Children']}
+                    ou_secondlevel.setdefault('Children',  []).append({'Id': ou_2l['Id'], 'Name': ou_2l['Name'], 'SCP': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': {}})
+            ous['Ous'][idx] = {'Id': ou['Id'], 'Name': ou['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_secondlevel['Children']}
             if ou_secondlevel == 'No-Children':
                 ou_secondlevel = {}
             else:
@@ -618,7 +619,7 @@ def get_ou_stucture(parent_id,  org):
                 logger.info('No-Children')
             else:
                 for idx2,  ou3 in enumerate(ous['Ous'][idx]['Children']):
-                    scp = get_scpforou(ou3['Id'], org)
+                    policies = get_policies(ou3['Id'], org)
                     page_iterator2 = paginator.paginate(ParentId=ou3['Id'])
                     logger.info(f'Check {ou3} for Children')
                     for page in page_iterator2:
@@ -632,7 +633,7 @@ def get_ou_stucture(parent_id,  org):
                             for ou_3l in page['OrganizationalUnits']:
                                 print(" - - - - %s" % (ou_3l['Name']))
                                 ou_thirdlevel.setdefault('Children',  []).append({'Id': ou_3l['Id'], 'Name': ou_3l['Name'], 'Children': {}})
-                        ous['Ous'][idx]['Children'][idx2] = {'Id': ou3['Id'], 'Name': ou3['Name'], 'SCPs': scp['SCPs'], 'Children': ou_thirdlevel['Children']}
+                        ous['Ous'][idx]['Children'][idx2] = {'Id': ou3['Id'], 'Name': ou3['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_thirdlevel['Children']}
                         if ou_thirdlevel == {'Children': 'No-Children'}:
                             ou_thirdlevel = {}
                         else:
@@ -642,7 +643,7 @@ def get_ou_stucture(parent_id,  org):
                             logger.info('No-Children')
                         else:
                             for idx3,  ou4 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children']):
-                                scp = get_scpforou(ou4['Id'], org)
+                                policies = get_policies(ou4['Id'], org)
                                 page_iterator3 = paginator.paginate(ParentId=ou4['Id'])
                                 logger.info(f'Check {ou4} for Children')
                                 for page in page_iterator3:
@@ -656,7 +657,7 @@ def get_ou_stucture(parent_id,  org):
                                         for ou_4l in page['OrganizationalUnits']:
                                             print(" - - - - - - %s" % (ou_4l['Name']))
                                             ou_fivelevel.setdefault('Children',  []).append({'Id': ou_4l['Id'], 'Name': ou_4l['Name'], 'Children': {}})
-                                    ous['Ous'][idx]['Children'][idx2]['Children'][idx3] = {'Id': ou4['Id'], 'Name': ou4['Name'], 'SCPs': scp['SCPs'], 'Children': ou_fivelevel['Children']}
+                                    ous['Ous'][idx]['Children'][idx2]['Children'][idx3] = {'Id': ou4['Id'], 'Name': ou4['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_fivelevel['Children']}
                                     if ou_fivelevel == {'Children': 'No-Children'}:
                                         ou_fivelevel = {}
                                     else:
@@ -666,7 +667,7 @@ def get_ou_stucture(parent_id,  org):
                                         logger.info('No-Children')
                                     else:
                                         for idx4,  ou5 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children']):
-                                            scp = get_scpforou(ou5['Id'], org)
+                                            policies = get_policies(ou5['Id'], org)
                                             page_iterator4 = paginator.paginate(ParentId=ou5['Id'])
                                             logger.info(f'Check {ou5} for Children')
                                             for page in page_iterator4:
@@ -680,7 +681,7 @@ def get_ou_stucture(parent_id,  org):
                                                     for ou_5l in page['OrganizationalUnits']:
                                                         print(" - - - - - - %s" % (ou_5l['Name']))
                                                         ou_sixlevel.setdefault('Children',  []).append({'Id': ou_5l['Id'], 'Name': ou_5l['Name'], 'Children': {}})
-                                                ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4] = {'Id': ou5['Id'], 'Name': ou5['Name'], 'SCPs': scp['SCPs'], 'Children': ou_sixlevel['Children']}
+                                                ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4] = {'Id': ou5['Id'], 'Name': ou5['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_sixlevel['Children']}
                                                 if ou_sixlevel == {'Children': 'No-Children'}:
                                                     ou_sixlevel = {}
                                                 else:
@@ -689,7 +690,7 @@ def get_ou_stucture(parent_id,  org):
                                                 logger.info('No-Children')
                                             else:
                                                 for idx5,  ou6 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children']):
-                                                    scp = get_scpforou(ou6['Id'], org)
+                                                    policies = get_policies(ou6['Id'], org)
                                                     page_iterator5 = paginator.paginate(ParentId=ou6['Id'])
                                                     logger.info(f'Check {ou6} for Children')
                                                     for page in page_iterator5:
@@ -703,7 +704,7 @@ def get_ou_stucture(parent_id,  org):
                                                             for ou_6l in page['OrganizationalUnits']:
                                                                 print(" - - - - - - - %s" % (ou_6l['Name']))
                                                                 ou_sevenlevel.setdefault('Children',  []).append({'Id': ou_6l['Id'], 'Name': ou_6l['Name'], 'Children': {'Children': 'No-Children'}})
-                                                        ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children'][idx5] = {'Id': ou6['Id'], 'Name': ou6['Name'], 'SCPs': scp['SCPs'], 'Children': ou_sevenlevel['Children']}
+                                                        ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children'][idx5] = {'Id': ou6['Id'], 'Name': ou6['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_sevenlevel['Children']}
                                                         if ou_sevenlevel == {'Children': 'No-Children'}:
                                                             ou_sevenlevel = {}
                                                         else:
@@ -722,7 +723,6 @@ def export_structure(file,  org):
     logger.info(f'\n Write Ous to file: {file}')
     print(f'Ous have been written to {file}.')
 
-
 def get_scpforou(ou_id,  org):
     response = org.list_policies_for_target(
         TargetId=ou_id,
@@ -736,6 +736,40 @@ def get_scpforou(ou_id,  org):
             scp.setdefault('SCPs', []).append({'Name': policy['Name']})
     return scp
 
+
+def get_policies(id,  org):
+    response = org.list_policies_for_target(
+        TargetId=id,
+        Filter='SERVICE_CONTROL_POLICY')
+    policies = {}
+    policies.setdefault('SCPs', [])
+    for policy in response['Policies']:
+        if policy['Name'] == 'FullAWSAccess':
+            logger.info('\n AWS SCP Found: FullAWSAccess')
+        else:
+            policies.setdefault('SCPs', []).append({'Name': policy['Name']})
+
+    response = org.list_policies_for_target(
+        TargetId=id,
+        Filter='BACKUP_POLICY')
+    policies.setdefault('BACKUP_POLICIES', [])
+    for policy in response['Policies']:
+        policies.setdefault('BACKUP_POLICIES', []).append({'Name': policy['Name']})
+
+    response = org.list_policies_for_target(
+        TargetId=id,
+        Filter='TAG_POLICY')
+    policies.setdefault('TAG_POLICIES', [])
+    for policy in response['Policies']:
+        policies.setdefault('TAG_POLICIES', []).append({'Name': policy['Name']})
+
+    response = org.list_policies_for_target(
+        TargetId=id,
+        Filter='AISERVICES_OPT_OUT_POLICY')
+    policies.setdefault('AISERVICES_OPT_OUT_POLICIES', [])
+    for policy in response['Policies']:
+        policies.setdefault('AISERVICES_OPT_OUT_POLICIES', []).append({'Name': policy['Name']})
+    return policies
 
 def get_all_scps(org):
     response = org.list_policies(
