@@ -12,7 +12,7 @@ logging.basicConfig(format=FORMAT,  level=logging.INFO,  filename='orgtool.log')
 logger = logging.getLogger('oustructure')
 
 
-def visualize_organization_diagrams(file, org):
+def visualize_organization_diagrams(file):
     logger.info(f'Import Json file: {file}')
     f = open(file, )
     data = json.load(f)
@@ -147,56 +147,134 @@ def visualize_organization_diagrams(file, org):
 # layout: verticalflow
 #
 ## ---- CSV below this line. First line are column names."""
-    root_id = org.list_roots()['Roots'][0]['Id']
-    csv += f"\nid, ou, scps, refs, image\n{root_id}, 'ManagementAccount', , , https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
+    for root in tqdm(data['root']):
+        root_id = root['Id']
+        policies = ""
+        if(root['TAG_POLICIES'] != []):
+            policies += "Attached TAG_POLICIES: "
+            for pol in root['TAG_POLICIES']:
+                policies += f"{pol['Name']} "
+        if(root['BACKUP_POLICIES'] != []):
+            policies += "Attached BACKUP_POLICIES: "
+            for pol in root['BACKUP_POLICIES']:
+                policies += f"{pol['Name']} "
+        if(root['SCPs'] != []):
+            policies += "Attached SCPs: "
+            for scp in root['SCPs']:
+                policies += f"{scp['Name']} "
+        if(root['AISERVICES_OPT_OUT_POLICIES'] != []):
+            policies += "Attached AI_POLICIES: "
+            for pol in root['AISERVICES_OPT_OUT_POLICIES']:
+                policies += f"{pol['Name']} "
+    csv += f"\nid, ou, scps, refs, image\n{root_id}, 'ManagementAccount',{policies}, , https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
     print("Generating visualization of Organization.")
     for firstlevel in tqdm(data['Ous']):
-        scps = ""
+        policies = ""
+        if(firstlevel['AISERVICES_OPT_OUT_POLICIES'] != []):
+            policies += "Attached AI_POLICIES: "
+            for pol in firstlevel['AISERVICES_OPT_OUT_POLICIES']:
+                policies += f"{pol['Name']} "
+        if(firstlevel['TAG_POLICIES'] != []):
+            policies += "Attached TAG_POLICIES: "
+            for pol in firstlevel['TAG_POLICIES']:
+                policies += f"{pol['Name']} "
+        if(firstlevel['BACKUP_POLICIES'] != []):
+            policies += "Attached BACKUP_POLICIES: "
+            for pol in firstlevel['BACKUP_POLICIES']:
+                policies += f"{pol['Name']} "
         if(firstlevel['SCPs'] != []):
-            scps += "Attached SCPs: "
+            policies += "Attached SCPs: "
             for scp in firstlevel['SCPs']:
-                scps += f"{scp['Name']} "
-        csv += f"\n{firstlevel['Id']}, {firstlevel['Name']}, {scps}, {root_id}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+                policies += f"{scp['Name']} "
+        csv += f"\n{firstlevel['Id']}, {firstlevel['Name']}, {policies}, {root_id}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
         if firstlevel['Children'] == 'No-Children':
             logger.info(f"{firstlevel['Name']} has no No-Children")
         else:
             for secondlevel in firstlevel['Children']:
-                scps = ""
+                policies = ""
+                if(secondlevel['AISERVICES_OPT_OUT_POLICIES'] != []):
+                    policies += "Attached AI_POLICIES: "
+                    for pol in secondlevel['AISERVICES_OPT_OUT_POLICIES']:
+                        policies += f"{pol['Name']} "
+                if(secondlevel['TAG_POLICIES'] != []):
+                    policies += "Attached TAG_POLICIES: "
+                    for pol in secondlevel['TAG_POLICIES']:
+                        policies += f"{pol['Name']} "
+                if(secondlevel['BACKUP_POLICIES'] != []):
+                    policies += "Attached BACKUP_POLICIES: "
+                    for pol in secondlevel['BACKUP_POLICIES']:
+                        policies += f"{pol['Name']} "
                 if(secondlevel['SCPs'] != []):
-                    scps += "Attached SCPs: "
+                    policies += "Attached SCPs: "
                     for scp in secondlevel['SCPs']:
-                        scps += f"{scp['Name']} "
-                csv += f"\n{secondlevel['Id']}, {secondlevel['Name']}, {scps}, {firstlevel['Id']}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+                        policies += f"{scp['Name']} "
+                csv += f"\n{secondlevel['Id']}, {secondlevel['Name']}, {policies}, {firstlevel['Id']}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
                 if secondlevel['Children'] == 'No-Children':
                     logger.info(f"{secondlevel['Name']} has no No-Children")
                 else:
                     for thirdlevel in secondlevel['Children']:
-                        scps = ""
+                        policies = ""
+                        if(thirdlevel['AISERVICES_OPT_OUT_POLICIES'] != []):
+                            policies += "Attached AI_POLICIES: "
+                            for pol in thirdlevel['AISERVICES_OPT_OUT_POLICIES']:
+                                policies += f"{pol['Name']} "
+                        if(thirdlevel['TAG_POLICIES'] != []):
+                            policies += "Attached TAG_POLICIES: "
+                            for pol in thirdlevel['TAG_POLICIES']:
+                                policies += f"{pol['Name']} "
+                        if(thirdlevel['BACKUP_POLICIES'] != []):
+                            policies += "Attached BACKUP_POLICIES: "
+                            for pol in thirdlevel['BACKUP_POLICIES']:
+                                policies += f"{pol['Name']} "
                         if(thirdlevel['SCPs'] != []):
-                            scps += "Attached SCPs: "
+                            policies += "Attached SCPs: "
                             for scp in thirdlevel['SCPs']:
-                                scps += f"{scp['Name']} "
-                        csv += f"\n{thirdlevel['Id']}, {thirdlevel['Name']}, {scps}, {secondlevel['Id']}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+                                policies += f"{scp['Name']} "
+                        csv += f"\n{thirdlevel['Id']}, {thirdlevel['Name']}, {policies}, {secondlevel['Id']}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
                         if thirdlevel['Children'] == 'No-Children':
                             logger.info(f"{thirdlevel['Name']} has no No-Children")
                         else:
                             for fourlevel in thirdlevel['Children']:
-                                scps = ""
+                                policies = ""
+                                if(fourlevel['AISERVICES_OPT_OUT_POLICIES'] != []):
+                                    policies += "Attached AI_POLICIES: "
+                                    for pol in fourlevel['AISERVICES_OPT_OUT_POLICIES']:
+                                        policies += f"{pol['Name']} "
+                                if(fourlevel['TAG_POLICIES'] != []):
+                                    policies += "Attached TAG_POLICIES: "
+                                    for pol in fourlevel['TAG_POLICIES']:
+                                        policies += f"{pol['Name']} "
+                                if(fourlevel['BACKUP_POLICIES'] != []):
+                                    policies += "Attached BACKUP_POLICIES: "
+                                    for pol in fourlevel['BACKUP_POLICIES']:
+                                        policies += f"{pol['Name']} "
                                 if(fourlevel['SCPs'] != []):
-                                    scps += "Attached SCPs: "
+                                    policies += "Attached SCPs: "
                                     for scp in fourlevel['SCPs']:
-                                        scps += f"{scp['Name']} "
-                                csv += f"\n{fourlevel['Id']}, {fourlevel['Name']}, {scps}, {thirdlevel['Id']}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+                                        policies += f"{scp['Name']} "
+                                csv += f"\n{fourlevel['Id']}, {fourlevel['Name']}, {policies}, {thirdlevel['Id']}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
                                 if fourlevel['Children'] == 'No-Children':
                                     logger.info(f"{fourlevel['Name']} has no No-Children")
                                 else:
                                     for fivelevel in fourlevel['Children']:
-                                        scps = ""
+                                        policies = ""
+                                        if(fivelevel['AISERVICES_OPT_OUT_POLICIES'] != []):
+                                            policies += "Attached AI_POLICIES: "
+                                            for pol in fivelevel['AISERVICES_OPT_OUT_POLICIES']:
+                                                policies += f"{pol['Name']} "
+                                        if(fivelevel['TAG_POLICIES'] != []):
+                                            policies += "Attached TAG_POLICIES: "
+                                            for pol in fivelevel['TAG_POLICIES']:
+                                                policies += f"{pol['Name']} "
+                                        if(fivelevel['BACKUP_POLICIES'] != []):
+                                            policies += "Attached BACKUP_POLICIES: "
+                                            for pol in fivelevel['BACKUP_POLICIES']:
+                                                policies += f"{pol['Name']} "
                                         if(fivelevel['SCPs'] != []):
-                                            scps += "Attached SCPs: "
+                                            policies += "Attached SCPs: "
                                             for scp in fivelevel['SCPs']:
-                                                scps += f"{scp['Name']} "
-                                        csv += f"\n{fivelevel['Id']}, {fivelevel['Name']}, {scps}, {fourlevel['Id']}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
+                                                policies += f"{scp['Name']} "
+                                        csv += f"\n{fivelevel['Id']}, {fivelevel['Name']}, {policies}, {fourlevel['Id']}, https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Organizational-Unit.svg"
     csvfile.write(csv)
     csvfile.close
 
@@ -591,7 +669,7 @@ def get_ou_stucture(parent_id,  org):
     print("\nOrganization-Structure: ")
     print("%s" % (parent_id))
     policies = get_policies(parent_id, org)
-    ous.setdefault('root',  []).append({'Id': parent_id, 'Name': 'root', 'SCP': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'] })
+    ous.setdefault('root',  []).append({'Id': parent_id, 'Name': 'root', 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'] })
     for page in page_iterator:
         for ou in page['OrganizationalUnits']:
             logger.info(f'Inititalize Dict for {ou}')
@@ -793,6 +871,7 @@ def attach_policies(file,  org):
     root_id = org.list_roots()['Roots'][0]['Id']
     print("\n************************")
     print("\nAttach-SCPs:")
+
     for firstlevel in tqdm(data['Ous']):
 
         firstlevelname = firstlevel['Name']
@@ -1020,29 +1099,31 @@ def main(argv):
     print('------------------------------------------------------------------------------')
     print('ORGTOOL for: \n exporting and importing AWS organizations structure and Policies to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
     print('------------------------------------------------------------------------------')
+    profile = 'default'
     try:
         opts,  args = getopt.getopt(argv, "hu:f:p:", ["u=", "f=", "p="])
     except getopt.GetoptError:
-        print('Usage:  ')
-        print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
-        print('Export SCPs: orgtool.py -u export-scps -p AWSPROFILE')
-        print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
-        print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE')
-        print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
-        print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
-        print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE')
+        print('Usage:\n\n')
+        print('Export:\npython orgtool.py -u export -f <file.json> -p AWSPROFILE')
+        print('\nExport Policies:\npython orgtool.py -u export-policies -f <file.json> -p AWSPROFILE')
+        print('\nImport:\npython orgtool.py -u import -f <file.json> -p AWSPROFILE')
+        print('\nImport Policies:\npython orgtool.py -u import-policies -f <file.json> -p AWSPROFILE')
+        print('\nValidate SCPs:\npython orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
+        print('\nAttach SCPs:\npython orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE')
+        print('\nVisualize Organization:\npython orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
+        print('\nVisualize Organization:\npython orgtool.py -u visualize-organization-diagrams -f <file.json>')
         sys.exit(2)
     for opt,  arg in opts:
         if opt == '-h':
-            print('Usage:  ')
-            print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
-            print('Export Policies: orgtool.py -u export-policies -f <file.json> -p AWSPROFILE')
-            print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
-            print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE')
-            print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
-            print('Attach SCPs: orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE')
-            print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
-            print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE')
+            print('Usage:\n\n')
+            print('Export:\npython orgtool.py -u export -f <file.json> -p AWSPROFILE')
+            print('\nExport Policies:\npython orgtool.py -u export-policies -f <file.json> -p AWSPROFILE')
+            print('\nImport:\npython orgtool.py -u import -f <file.json> -p AWSPROFILE')
+            print('\nImport Policies:\npython orgtool.py -u import-policies -f <file.json> -p AWSPROFILE')
+            print('\nValidate SCPs:\npython orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
+            print('\nAttach SCPs:\npython orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE')
+            print('\nVisualize Organization:\npython orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
+            print('\nVisualize Organization:\npython orgtool.py -u visualize-organization-diagrams -f <file.json>')
             sys.exit()
         elif opt in ("-u",  "--usage"):
             print(f'Current usage: {arg}')
@@ -1091,7 +1172,7 @@ def main(argv):
     elif usage == 'visualize-organization-diagrams':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: visualize Organization with diagrams.net from Json')
-        visualize_organization_diagrams(file, org)
+        visualize_organization_diagrams(file)
     print('ℹ️ logs can be found in orgtool.log')
 
 
