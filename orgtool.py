@@ -166,7 +166,7 @@ def visualize_organization_diagrams(file):
             policies += "Attached AI_POLICIES: "
             for pol in root['AISERVICES_OPT_OUT_POLICIES']:
                 policies += f"{pol['Name']} "
-    csv += f"\nid, ou, scps, refs, image\n{root_id}, 'ManagementAccount',{policies}, , https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
+    csv += f"\nid, ou, scps, refs, image\n{root_id}, 'ManagementAccount', {policies}, , https://raw.githubusercontent.com/daknhh/aws-orgtool/68de9477ed0fa9ac3dda1beea938b7453d44480e/static/AWS-Organizations_Management-Account.svg"
     print("Generating visualization of Organization.")
     for firstlevel in tqdm(data['Ous']):
         policies = ""
@@ -669,7 +669,7 @@ def get_ou_stucture(parent_id,  org):
     print("\nOrganization-Structure: ")
     print("%s" % (parent_id))
     policies = get_policies(parent_id, org)
-    ous.setdefault('root',  []).append({'Id': parent_id, 'Name': 'root', 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'] })
+    ous.setdefault('root',  []).append({'Id': parent_id, 'Name': 'root', 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'], 'TAG_POLICIES': policies['TAG_POLICIES'], 'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES']})
     for page in page_iterator:
         for ou in page['OrganizationalUnits']:
             logger.info(f'Inititalize Dict for {ou}')
@@ -686,8 +686,8 @@ def get_ou_stucture(parent_id,  org):
                 print(" - %s" % (ou['Name']))
                 for ou_2l in page['OrganizationalUnits']:
                     print(" - - %s" % (ou_2l['Name']))
-                    ou_secondlevel.setdefault('Children',  []).append({'Id': ou_2l['Id'], 'Name': ou_2l['Name'], 'SCP': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': {}})
-            ous['Ous'][idx] = {'Id': ou['Id'], 'Name': ou['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_secondlevel['Children']}
+                    ou_secondlevel.setdefault('Children',  []).append({'Id': ou_2l['Id'], 'Name': ou_2l['Name'], 'SCP': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'], 'TAG_POLICIES': policies['TAG_POLICIES'], 'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': {}})
+            ous['Ous'][idx] = {'Id': ou['Id'], 'Name': ou['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'], 'TAG_POLICIES': policies['TAG_POLICIES'], 'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_secondlevel['Children']}
             if ou_secondlevel == 'No-Children':
                 ou_secondlevel = {}
             else:
@@ -711,7 +711,7 @@ def get_ou_stucture(parent_id,  org):
                             for ou_3l in page['OrganizationalUnits']:
                                 print(" - - - - %s" % (ou_3l['Name']))
                                 ou_thirdlevel.setdefault('Children',  []).append({'Id': ou_3l['Id'], 'Name': ou_3l['Name'], 'Children': {}})
-                        ous['Ous'][idx]['Children'][idx2] = {'Id': ou3['Id'], 'Name': ou3['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_thirdlevel['Children']}
+                        ous['Ous'][idx]['Children'][idx2] = {'Id': ou3['Id'], 'Name': ou3['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'], 'TAG_POLICIES': policies['TAG_POLICIES'], 'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_thirdlevel['Children']}
                         if ou_thirdlevel == {'Children': 'No-Children'}:
                             ou_thirdlevel = {}
                         else:
@@ -735,7 +735,7 @@ def get_ou_stucture(parent_id,  org):
                                         for ou_4l in page['OrganizationalUnits']:
                                             print(" - - - - - - %s" % (ou_4l['Name']))
                                             ou_fivelevel.setdefault('Children',  []).append({'Id': ou_4l['Id'], 'Name': ou_4l['Name'], 'Children': {}})
-                                    ous['Ous'][idx]['Children'][idx2]['Children'][idx3] = {'Id': ou4['Id'], 'Name': ou4['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_fivelevel['Children']}
+                                    ous['Ous'][idx]['Children'][idx2]['Children'][idx3] = {'Id': ou4['Id'], 'Name': ou4['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'], 'TAG_POLICIES': policies['TAG_POLICIES'], 'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_fivelevel['Children']}
                                     if ou_fivelevel == {'Children': 'No-Children'}:
                                         ou_fivelevel = {}
                                     else:
@@ -759,7 +759,7 @@ def get_ou_stucture(parent_id,  org):
                                                     for ou_5l in page['OrganizationalUnits']:
                                                         print(" - - - - - - %s" % (ou_5l['Name']))
                                                         ou_sixlevel.setdefault('Children',  []).append({'Id': ou_5l['Id'], 'Name': ou_5l['Name'], 'Children': {}})
-                                                ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4] = {'Id': ou5['Id'], 'Name': ou5['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_sixlevel['Children']}
+                                                ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4] = {'Id': ou5['Id'], 'Name': ou5['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'], 'TAG_POLICIES': policies['TAG_POLICIES'], 'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_sixlevel['Children']}
                                                 if ou_sixlevel == {'Children': 'No-Children'}:
                                                     ou_sixlevel = {}
                                                 else:
@@ -782,7 +782,7 @@ def get_ou_stucture(parent_id,  org):
                                                             for ou_6l in page['OrganizationalUnits']:
                                                                 print(" - - - - - - - %s" % (ou_6l['Name']))
                                                                 ou_sevenlevel.setdefault('Children',  []).append({'Id': ou_6l['Id'], 'Name': ou_6l['Name'], 'Children': {'Children': 'No-Children'}})
-                                                        ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children'][idx5] = {'Id': ou6['Id'], 'Name': ou6['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'],'TAG_POLICIES': policies['TAG_POLICIES'],'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_sevenlevel['Children']}
+                                                        ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children'][idx5] = {'Id': ou6['Id'], 'Name': ou6['Name'], 'SCPs': policies['SCPs'], 'BACKUP_POLICIES': policies['BACKUP_POLICIES'], 'TAG_POLICIES': policies['TAG_POLICIES'], 'AISERVICES_OPT_OUT_POLICIES': policies['AISERVICES_OPT_OUT_POLICIES'], 'Children': ou_sevenlevel['Children']}
                                                         if ou_sevenlevel == {'Children': 'No-Children'}:
                                                             ou_sevenlevel = {}
                                                         else:
@@ -800,6 +800,7 @@ def export_structure(file,  org):
     print("\n************************")
     logger.info(f'\n Write Ous to file: {file}')
     print(f'Ous have been written to {file}.')
+
 
 def get_scpforou(ou_id,  org):
     response = org.list_policies_for_target(
@@ -848,6 +849,7 @@ def get_policies(id,  org):
     for policy in response['Policies']:
         policies.setdefault('AISERVICES_OPT_OUT_POLICIES', []).append({'Name': policy['Name']})
     return policies
+
 
 def get_all_scps(org):
     response = org.list_policies(
