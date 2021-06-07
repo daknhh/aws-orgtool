@@ -35,7 +35,7 @@ blocks:
     props:
       dark: true
       tinyTitle: "Features"
-      subtitle: "Icons are from React HeroIcons https://github.com/tailwindlabs/heroicons"
+      subtitle: ""
       features:
         - title: "Import / Export Structure"
           description: "Export your whole aws organization structure to json as a backup or use it to sync it to a sandbox organization."
