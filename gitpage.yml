@@ -1,0 +1,58 @@
+# Welcome to Gitpages!
+
+# This playground is designed to allow you to create landing pages.
+
+# How to get started
+
+# 1. Press CTRL + D (to get the block snippets) in the code editor.
+# 2. Choose which blocks you want and edit them (view them as you go!)
+# 3. Once happy, export to GitHub or just static HTML 🔥
+
+# TIP: Use the slider to see Desktop, Tablet or Mobile views 👍
+
+version: 1
+
+theme:
+  primary: pink
+
+blocks:
+  - type: 'navigation'
+    style: 'solid'
+    props:
+      title: 'AWS-ORGTOOL'
+      showViewOnGitHubButton: true
+
+  - type: 'hero'
+    style: 'stacked'
+    props:
+      title: ''
+      coverImage: "https://github.com/daknhh/aws-orgtool/blob/feature/attach-all-kinds-of--policies/static/orgtool.png"
+      subtitle: 'This Tool is to export your AWS Organizations structure, Policies to Json file and import structure, SCPs to another AWS Organization. During import and export a a log file is written so that the processes can be traced'
+
+
+  - type: "features"
+    style: "stacked"
+    props:
+      dark: true
+      tinyTitle: "Features"
+      subtitle: "Icons are from React HeroIcons https://github.com/tailwindlabs/heroicons"
+      features:
+        - title: "Import / Export Structure"
+          description: "Export your whole aws organization structure to json as a backup or use it to sync it to a sandbox organization."
+        - title: "Import / Export Policies"
+          description: "Export all your policies (Service Control Policies, Tag Policies, Backup Policies and AI services opt-out policies) to json as a backup or use it to sync it to a sandbox organization."
+        - title: "Validate SCPs"
+          description: "We are using Access Analyzer policy validation to validate your SCPs against IAM policy grammar and best practices."
+        - title: "Visualization"
+          description: "Visualize your aws oganization using draw.io or graphviz."
+
+  - type: "stats"
+    style: "stacked"
+    props:
+      title: "Project Numbers"
+      subtitle: "We are fully open source"
+      stats:
+        - value: "100%"
+          label: "Open Source"
+        - value: "2"
+          label: "Contributors"
