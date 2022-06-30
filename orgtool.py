@@ -780,7 +780,7 @@ def get_accounts_for_ou(ou, org):
     for account in response['Accounts']:
         accounttags = get_tagsforou(account['Id'], org)
         accounts.setdefault('Accounts', []).append({'Id': account['Id'], 'Tags': accounttags['Tags']})
-    return accounts    
+    return accounts
 
 
 def attach_policies(file,  org):
