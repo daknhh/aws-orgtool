@@ -2,6 +2,13 @@
 
 ## Released
 
+## 1.0.2
+
+### Added
+
+* Exports of Tags for Ous + Accounts per OU and Tags of Accounts
+
+
 ## 1.0.1
 
 ### Added
