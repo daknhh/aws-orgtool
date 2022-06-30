@@ -777,7 +777,7 @@ def get_accounts_for_ou(ou,org):
     accounts.setdefault('Accounts', [])
     for account in response['Accounts']:
         accounttags = get_tagsforou(account['Id'],org)
-        accounts.setdefault('Accounts', []).append({'Id': account['Id'], 'Tags': accounttags})
+        accounts.setdefault('Accounts', []).append({'Id': account['Id'], 'Tags': accounttags['Tags']})
     return accounts    
 def attach_policies(file,  org):
     scps_in_org = get_all_scps(org)
