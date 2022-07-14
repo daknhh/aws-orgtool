@@ -779,7 +779,7 @@ def get_accounts_for_ou(ou, org):
     accounts.setdefault('Accounts', [])
     for account in response['Accounts']:
         accounttags = get_tagsforou(account['Id'], org)
-        accounts.setdefault('Accounts', []).append({'Id': account['Id'], 'Tags': accounttags['Tags']})
+        accounts.setdefault('Accounts', []).append({'Id': account['Id'], 'Tags': accounttags['Tags'],'Email': account['Email'], 'Name': account['Name']})
     return accounts
 
 
