@@ -1,0 +1,28 @@
+
+version: '3'
+#output: prefixed
+env:
+  LambdaS3Bucket: S3BUCKET
+  Version: 0.0.1
+  LambdaSourceCodeDirectory: organization-exporter
+vars: 
+  REGION: echo AWS_REGION
+tasks:  
+  uploadlambdacode:
+    desc: Upload Lambda to s3
+    cmds:
+      - echo $'\n ⌛️ Uploading Python Lambda {{.LambdaSourceCodeDirectory}} with dependencies'
+      - echo $'\n📁 Creating Temp Directory'
+      - mkdir temp
+      - cp -R {{.LambdaSourceCodeDirectory}}/ temp/
+      - echo $'\n👩🏼‍🔧 Installing Python Dependencies for graviton to temp directory'
+      - pip3 install -r temp/requirements.txt --platform manylinux2014_aarch64 --no-deps --target temp
+      - echo $'\n🤐  Zip temp directory for lambda and upload to s3 Lambda Bucket'
+      - cd temp && zip -rq {{.LambdaSourceCodeDirectory}}-{{.Version}}.zip .
+      - cd temp && aws s3 cp {{.LambdaSourceCodeDirectory}}-{{.Version}}.zip  s3://{{.LambdaS3Bucket}}/{{.LambdaSourceCodeDirectory}}/{{.LambdaSourceCodeDirectory}}-{{.Version}}.zip
+      - echo $'\n🧹 Deleting Temp Files'
+      - rm -r temp
+    vars:
+      ACCOUNT:
+        sh: aws sts get-caller-identity |jq -r .Account
+    silent: true
