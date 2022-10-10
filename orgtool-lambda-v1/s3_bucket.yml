@@ -1,0 +1,74 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >
+  Amazon Simple Storage Service (Amazon S3) bucket using server-side encryption
+  with Amazon S3-managed keys SSE-S3 for Backup.
+
+###############################################################################
+Parameters:
+###############################################################################
+
+  BucketNamePrefix:
+    Type: String
+    Description: The name of the S3 Bucket to Backup
+    Default: "export"
+  BucketNameSuffix:
+    Type: String
+    Description: The suffix for the name of the S3 Bucket to Backup
+    Default: "orga"
+  CrossAccountId:
+    Type: String
+    Description: Must be a valid AWS AccountId
+    Default: "CROSSACCOUNTID"
+  CrossAccountRole:
+    Type: String
+    Description: Must be a valid Rolename
+    Default: "CROSSACCOUNTROLE"
+
+###############################################################################
+Resources:
+###############################################################################
+
+  OrgadumpBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${BucketNamePrefix}-${AWS::AccountId}-${BucketNameSuffix}"
+      VersioningConfiguration: 
+        Status: Enabled
+      BucketEncryption:
+        ServerSideEncryptionConfiguration: 
+          -
+            ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+
+  OrgadumpBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref OrgadumpBucket
+      PolicyDocument: 
+        Statement: 
+          - 
+            Action: 
+              -  "s3:DeleteBucket"
+              -  "s3:DeleteBucketPolicy"
+              -  "s3:DeleteObject"
+              -  "s3:DeleteObjectVersion"
+              -  "s3:DeleteObjectVersionTagging"
+            Effect: Deny
+            Resource: 
+              - !Sub "arn:aws:s3:::${OrgadumpBucket}"
+              - !Sub "arn:aws:s3:::${OrgadumpBucket}/*"
+            NotPrincipal: 
+                AWS: 
+                  - !Sub "arn:aws:iam::${AWS::AccountId}:root"
+          - 
+            Action: 
+              -  "s3:GetObject"
+              -  "s3:PutObject"
+              -  "s3:PutObjectAcl"
+            Effect: Allow
+            Resource: 
+              - !Sub "arn:aws:s3:::${OrgadumpBucket}"
+              - !Sub "arn:aws:s3:::${OrgadumpBucket}/*"
+            Principal: 
+                AWS: 
+                  - !Sub "arn:aws:iam::${CrossAccountId}:role/${CrossAccountRole}"
