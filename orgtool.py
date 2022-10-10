@@ -152,7 +152,7 @@ def visualize_organization_diagrams(file, org):
     print("Generating visualization of Organization.")
     for firstlevel in tqdm(data['Ous']):
         scps = ""
-        if(firstlevel['SCPs'] != []):
+        if (firstlevel['SCPs'] != []):
             scps += "Attached SCPs: "
             for scp in firstlevel['SCPs']:
                 scps += f"{scp['Name']} "
@@ -162,7 +162,7 @@ def visualize_organization_diagrams(file, org):
         else:
             for secondlevel in firstlevel['Children']:
                 scps = ""
-                if(secondlevel['SCPs'] != []):
+                if (secondlevel['SCPs'] != []):
                     scps += "Attached SCPs: "
                     for scp in secondlevel['SCPs']:
                         scps += f"{scp['Name']} "
@@ -172,7 +172,7 @@ def visualize_organization_diagrams(file, org):
                 else:
                     for thirdlevel in secondlevel['Children']:
                         scps = ""
-                        if(thirdlevel['SCPs'] != []):
+                        if (thirdlevel['SCPs'] != []):
                             scps += "Attached SCPs: "
                             for scp in thirdlevel['SCPs']:
                                 scps += f"{scp['Name']} "
@@ -182,7 +182,7 @@ def visualize_organization_diagrams(file, org):
                         else:
                             for fourlevel in thirdlevel['Children']:
                                 scps = ""
-                                if(fourlevel['SCPs'] != []):
+                                if (fourlevel['SCPs'] != []):
                                     scps += "Attached SCPs: "
                                     for scp in fourlevel['SCPs']:
                                         scps += f"{scp['Name']} "
@@ -192,7 +192,7 @@ def visualize_organization_diagrams(file, org):
                                 else:
                                     for fivelevel in fourlevel['Children']:
                                         scps = ""
-                                        if(fivelevel['SCPs'] != []):
+                                        if (fivelevel['SCPs'] != []):
                                             scps += "Attached SCPs: "
                                             for scp in fivelevel['SCPs']:
                                                 scps += f"{scp['Name']} "
@@ -779,7 +779,7 @@ def get_accounts_for_ou(ou, org):
     accounts.setdefault('Accounts', [])
     for account in response['Accounts']:
         accounttags = get_tagsforou(account['Id'], org)
-        accounts.setdefault('Accounts', []).append({'Id': account['Id'], 'Tags': accounttags['Tags'],'Email': account['Email'], 'Name': account['Name']})
+        accounts.setdefault('Accounts', []).append({'Id': account['Id'], 'Tags': accounttags['Tags'], 'Email': account['Email'], 'Name': account['Name']})
     return accounts
 
 
@@ -796,7 +796,7 @@ def attach_policies(file,  org):
 
         firstlevelname = firstlevel['Name']
         firstlevelou_id = get_ou_id_by_name(firstlevelname, root_id, org)
-        if(firstlevel['SCPs'] == []):
+        if (firstlevel['SCPs'] == []):
             logger.info(f'No SCP to attach for: {firstlevelou_id} - {firstlevelname} in {root_id}')
             print(f'\nℹ️ No SCPs for OU: {firstlevelname}.\n')
         else:
@@ -819,7 +819,7 @@ def attach_policies(file,  org):
                 for secondlevel in firstlevel['Children']:
                     secondlevelname = secondlevel['Name']
                     secondlevelou_id = get_ou_id_by_name(secondlevelname, firstlevelou_id, org)
-                    if(secondlevel['SCPs'] == []):
+                    if (secondlevel['SCPs'] == []):
                         logger.info(f'No SCP to attach for: {secondlevelou_id} - {secondlevelname} in {firstlevelou_id}')
                         print(f'\nℹ️ No SCPs for OU: {secondlevelname}.')
                     else:
@@ -841,7 +841,7 @@ def attach_policies(file,  org):
                             for thirdlevel in secondlevel['Children']:
                                 thirdlevelname = thirdlevel['Name']
                                 thirdlevelou_id = get_ou_id_by_name(thirdlevelname, secondlevelou_id, org)
-                                if(thirdlevel['SCPs'] == []):
+                                if (thirdlevel['SCPs'] == []):
                                     logger.info(f'No SCPs to attach for: {thirdlevelou_id} - {thirdlevelname} in {secondlevelou_id}')
                                     print(f'\nℹ️ No SCPs for OU: {thirdlevelname}.')
                                 else:
@@ -864,7 +864,7 @@ def attach_policies(file,  org):
                                     for fourlevel in thirdlevel['Children']:
                                         fourlevelname = thirdlevel['Name']
                                         fourlevelou_id = get_ou_id_by_name(fourlevelname, thirdlevelou_id, org)
-                                        if(fourlevel['SCPs'] == []):
+                                        if (fourlevel['SCPs'] == []):
                                             logger.info(f'No SCPs to attach for: {fourlevelou_id} - {fourlevelname} in {thirdlevelou_id}')
                                             print(f'\nℹ️ No SCPs for OU: {fourlevelname}.')
                                         else:
@@ -886,7 +886,7 @@ def attach_policies(file,  org):
                                             for fivelevel in fourlevel['Children']:
                                                 fivelevelname = fivelevel['Name']
                                                 fivelevelou_id = get_ou_id_by_name(fivelevelname, fourlevelou_id, org)
-                                                if(fivelevel['SCPs'] == []):
+                                                if (fivelevel['SCPs'] == []):
                                                     logger.info(f'No SCPs to attach for: {fivelevelou_id} - {fivelevelname} in {fourlevelou_id}')
                                                     print(f'\nℹ️ No SCPs for OU: {fivelevelname}.')
                                                 else:
@@ -916,7 +916,7 @@ def get_ou_id_by_name(name,  parent_id,  org):
                 if value == search_key:
                     res = ou['Id']
                     logger.info(f'Got OuID: {res}')
-    return(res)
+    return (res)
 
 
 def import_structure(file,  org):
