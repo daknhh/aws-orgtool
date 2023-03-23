@@ -793,7 +793,6 @@ def attach_policies(file,  org):
     print("\n************************")
     print("\nAttach-SCPs:")
     for firstlevel in tqdm(data['Ous']):
-
         firstlevelname = firstlevel['Name']
         firstlevelou_id = get_ou_id_by_name(firstlevelname, root_id, org)
         if (firstlevel['SCPs'] == []):
@@ -1020,7 +1019,7 @@ def main(argv):
     print('ORGTOOL for: \n exporting and importing AWS organizations structure and Policies to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
     print('------------------------------------------------------------------------------')
     try:
-        opts,  args = getopt.getopt(argv, "hu:f:p:", ["u=", "f=", "p="])
+        opts,  args = getopt.getopt(argv, "hu:f:p:e:", ["u=", "f=", "p=", "e="])
     except getopt.GetoptError:
         print('Usage:  ')
         print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE ')
