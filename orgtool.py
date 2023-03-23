@@ -1059,7 +1059,7 @@ def main(argv):
             print(f'Exclude {arg}')
             logger.info(f'Exclude:{arg}')
             exclude = arg
-        elif opt in ("-mfa",  "--mfa"):
+        elif opt in ("-m",  "--mfa"):
             print(f'MFA: {arg}')
             logger.info(f'MFA:{arg}')
             mfa = arg
