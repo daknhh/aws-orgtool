@@ -1065,14 +1065,18 @@ def main(argv):
             mfa = arg
     if(mfa == "true"):
         session = boto3.Session(profile_name=profile)
-        mfa_serial = session._session.full_config['profiles'][profile]['mfa_serial']
-        mfa_token = input('Please enter your 6 digit MFA code:')
-        sts = session.client('sts')
-        MFA_validated_token = sts.get_session_token(SerialNumber=mfa_serial, TokenCode=mfa_token)
-        org = session.client('organizations', aws_session_token=MFA_validated_token['Credentials']['SessionToken'],aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'],
-                aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
-        accessanalyzer = session.client('accessanalyzer', aws_session_token=MFA_validated_token['Credentials']['SessionToken'],aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'],
-                aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
+        try:
+            mfa_serial = session._session.full_config['profiles'][profile]['mfa_serial']
+            mfa_token = input('Please enter your 6 digit MFA code:')
+            sts = session.client('sts')
+            MFA_validated_token = sts.get_session_token(SerialNumber=mfa_serial, TokenCode=mfa_token)
+            org = session.client('organizations', aws_session_token=MFA_validated_token['Credentials']['SessionToken'],aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'],
+                    aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
+            accessanalyzer = session.client('accessanalyzer', aws_session_token=MFA_validated_token['Credentials']['SessionToken'],aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'],
+                    aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
+        except:
+            print(f"🚨 Could not find mfa_serial in your {profile} \n\n⚠️  Please add mfa_serial to your profile and try again. ⚠️\n\n👋🏻 Bye ⚓️")
+            exit()
     else:
         org = session.client('organizations')
         accessanalyzer = session.client('accessanalyzer', region_name="eu-central-1")
