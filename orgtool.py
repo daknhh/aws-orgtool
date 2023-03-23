@@ -1020,7 +1020,7 @@ def main(argv):
     print('ORGTOOL for: \n exporting and importing AWS organizations structure and Policies to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
     print('------------------------------------------------------------------------------')
     try:
-        opts,  args = getopt.getopt(argv, "hu:f:p:m", ["u=", "f=", "p=","mfa="])
+        opts,  args = getopt.getopt(argv, "hu:f:p:m", ["u=", "f=", "p=", "mfa="])
     except getopt.GetoptError:
         print('Usage:  ')
         print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE -m (true|false)')
@@ -1063,23 +1063,21 @@ def main(argv):
             print(f'MFA: {arg}')
             logger.info(f'MFA:{arg}')
             mfa = arg
-    if(mfa == "true"):
+    if mfa == "true":
         session = boto3.Session(profile_name=profile)
         try:
             mfa_serial = session._session.full_config['profiles'][profile]['mfa_serial']
             mfa_token = input('Please enter your 6 digit MFA code:')
             sts = session.client('sts')
             MFA_validated_token = sts.get_session_token(SerialNumber=mfa_serial, TokenCode=mfa_token)
-            org = session.client('organizations', aws_session_token=MFA_validated_token['Credentials']['SessionToken'],aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'],
-                    aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
-            accessanalyzer = session.client('accessanalyzer', aws_session_token=MFA_validated_token['Credentials']['SessionToken'],aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'],
-                    aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
-        except:
+            org = session.client('organizations', aws_session_token=MFA_validated_token['Credentials']['SessionToken'], aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'], aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
+            accessanalyzer = session.client('accessanalyzer', aws_session_token=MFA_validated_token['Credentials']['SessionToken'], aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'], aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
+        except Exception:
             print(f"🚨 Could not find mfa_serial in your {profile} \n\n⚠️  Please add mfa_serial to your profile and try again. ⚠️\n\n👋🏻 Bye ⚓️")
             exit()
     else:
         org = session.client('organizations')
-        accessanalyzer = session.client('accessanalyzer', region_name="eu-central-1")
+        accessanalyzer = session.client('accessanalyzer')
     if usage == 'export':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Export OUs to Json')
