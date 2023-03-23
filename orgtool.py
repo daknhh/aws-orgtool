@@ -391,7 +391,7 @@ def import_policies(file,  org, exclude):
     print("\nImport-Policies:")
     print("\n\n⌛️ Check if SCPs to import.")
     key = 'Scps'
-    if key in alldata & key != exclude:
+    if(key in alldata) and (key != exclude):
         currentscps = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='SERVICE_CONTROL_POLICY').get("Policies", [])}
         print("\nImport-SCPs:")
         for scp in tqdm(alldata['Scps']):
@@ -429,7 +429,7 @@ def import_policies(file,  org, exclude):
         print(" ℹ️ No SCPs to import.")
     print("\n\n⌛️ Check if Tag Policies to import.")
     key = 'Tags'
-    if key in alldata & key != exclude:
+    if(key in alldata) and (key != exclude):
         currenttags = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='TAG_POLICY').get("Policies", [])}
         print("\nImport-Tag Policies:")
         for policy in tqdm(alldata['Tags']):
@@ -467,7 +467,7 @@ def import_policies(file,  org, exclude):
         print(" ℹ️  No Tag Policies to import.")
     print("\n\n⌛️ Check if Backup Policies to import.")
     key = 'Backup'
-    if key in alldata & key != exclude:
+    if(key in alldata) and (key != exclude):
         currentbackup = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='BACKUP_POLICY').get("Policies", [])}
         print("\nImport Backup Policies:")
         for policy in tqdm(alldata['Backup']):
@@ -505,7 +505,7 @@ def import_policies(file,  org, exclude):
         print(" ℹ️  No Backup Policies to import.")
     print("\n\n⌛️ Check if AI services opt-out Policies to import.")
     key = 'AI'
-    if key in alldata & key != exclude:
+    if(key in alldata) and (key != exclude):
         currentais = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='AISERVICES_OPT_OUT_POLICY').get("Policies", [])}
         print("\nImport AI services opt-out Policies:")
         for policy in tqdm(alldata['AI']):
