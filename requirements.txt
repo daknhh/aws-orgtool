@@ -1,5 +1,3 @@
 boto3
-logging
-getopt
 graphviz
 tqdm
