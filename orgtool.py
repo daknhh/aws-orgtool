@@ -1079,7 +1079,7 @@ def main(argv):
         logger.info('NEW REQUEST: Import Policies from Json')
         if exclude not in locals():
             exclude = "NONE"
-        import_policies(file, org,exclude)
+        import_policies(file, org, exclude)
     elif usage == 'validate-scps':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Validate Scps from Json')
