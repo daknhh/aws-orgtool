@@ -1020,62 +1020,55 @@ def main(argv):
     print('ORGTOOL for: \n exporting and importing AWS organizations structure and Policies to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
     print('------------------------------------------------------------------------------')
     try:
-        opts,  args = getopt.getopt(argv, "hu:f:p:m", ["u=", "f=", "p=", "mfa="])
+        opts,  args = getopt.getopt(argv, "hu:f:p:", ["u=", "f=", "p="])
     except getopt.GetoptError:
         print('Usage:  ')
-        print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE -m (true|false)')
-        print('Export SCPs: orgtool.py -u export-scps -p AWSPROFILE -m (true|false)')
-        print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE -m (true|false)')
-        print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE -m (true|false)')
-        print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE -m (true|false)')
-        print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE -m (true|false)')
-        print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE -m (true|false)')
+        print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE ')
+        print('Export SCPs: orgtool.py -u export-scps -p AWSPROFILE ')
+        print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE ')
+        print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE ')
+        print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE ')
+        print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE ')
+        print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE ')
         sys.exit(2)
     for opt,  arg in opts:
         if opt == '-h':
             print('Usage:  ')
-            print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE -m (true|false)')
-            print('Export Policies: orgtool.py -u export-policies -f <file.json> -p AWSPROFILE -m (true|false)')
-            print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE -m (true|false)')
-            print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE -e EXCLUDE(*optional) -m (true|false)')
-            print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE -m (true|false)')
-            print('Attach SCPs: orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE -m (true|false)')
-            print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE -m (true|false)')
-            print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE -m (true|false)')
+            print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE ')
+            print('Export Policies: orgtool.py -u export-policies -f <file.json> -p AWSPROFILE ')
+            print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE ')
+            print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE -e EXCLUDE(*optional) ')
+            print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE ')
+            print('Attach SCPs: orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE ')
+            print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE ')
+            print('Visualize Organization: orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE ')
             sys.exit()
         elif opt in ("-u",  "--usage"):
-            print(f'Current usage: {arg}')
+            print(f'⚙️  Current usage: {arg}')
             logger.info(f'Usage:{arg}')
             usage = arg
         elif opt in ("-f",  "--file"):
-            print(f'File {arg}')
+            print(f'📃 File {arg}')
             logger.info(f'File:{arg}')
             file = arg
         elif opt in ("-p",  "--profile"):
-            print(f'Profile {arg}')
+            print(f'👤 Profile {arg}')
             logger.info(f'Profile:{arg}')
             profile = arg
         elif opt in ("-e",  "--exclude"):
-            print(f'Exclude {arg}')
+            print(f'❌ Exclude {arg}')
             logger.info(f'Exclude:{arg}')
             exclude = arg
-        elif opt in ("-m",  "--mfa"):
-            print(f'MFA: {arg}')
-            logger.info(f'MFA:{arg}')
-            mfa = arg
-    if mfa == "true":
-        session = boto3.Session(profile_name=profile)
-        try:
-            mfa_serial = session._session.full_config['profiles'][profile]['mfa_serial']
-            mfa_token = input('Please enter your 6 digit MFA code:')
-            sts = session.client('sts')
-            MFA_validated_token = sts.get_session_token(SerialNumber=mfa_serial, TokenCode=mfa_token)
-            org = session.client('organizations', aws_session_token=MFA_validated_token['Credentials']['SessionToken'], aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'], aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
-            accessanalyzer = session.client('accessanalyzer', aws_session_token=MFA_validated_token['Credentials']['SessionToken'], aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'], aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
-        except Exception:
-            print(f"🚨 Could not find mfa_serial in your {profile} \n\n⚠️  Please add mfa_serial to your profile and try again. ⚠️\n\n👋🏻 Bye ⚓️")
-            exit()
-    else:
+    session = boto3.Session(profile_name=profile)
+    try:
+        mfa_serial = session._session.full_config['profiles'][profile]['mfa_serial']
+        print("🫵  You Selected a profile with MFA")
+        mfa_token = input('🙏 Please enter your 6 digit MFA code:')
+        sts = session.client('sts')
+        MFA_validated_token = sts.get_session_token(SerialNumber=mfa_serial, TokenCode=mfa_token)
+        org = session.client('organizations', aws_session_token=MFA_validated_token['Credentials']['SessionToken'], aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'], aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
+        accessanalyzer = session.client('accessanalyzer', aws_session_token=MFA_validated_token['Credentials']['SessionToken'], aws_secret_access_key=MFA_validated_token['Credentials']['SecretAccessKey'], aws_access_key_id=MFA_validated_token['Credentials']['AccessKeyId'])
+    except Exception:
         org = session.client('organizations')
         accessanalyzer = session.client('accessanalyzer')
     if usage == 'export':

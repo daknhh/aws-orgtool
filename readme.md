@@ -14,28 +14,28 @@ This Tool is to export your AWS Organizations structure, Policies to Json file a
 ## Usage
 
 ### Structure:
-#### Export: `orgtool.py -u export -f <file.json> -p AWSPROFILE  -m (true|false)`
+#### Export: `orgtool.py -u export -f <file.json> -p AWSPROFILE  `
 
-#### Import: `orgtool.py -u import -f <file.json> -p AWSPROFILE  -m (true|false)`
+#### Import: `orgtool.py -u import -f <file.json> -p AWSPROFILE  `
 ### Policies:
 
-#### Export: `orgtool.py -u export-policies -f <file.json> -p AWSPROFILE -m (true|false)`
+#### Export: `orgtool.py -u export-policies -f <file.json> -p AWSPROFILE `
 
-#### Import: `orgtool.py -u import-policies -f <file.json> -p AWSPROFILE -m (true|false)`
+#### Import: `orgtool.py -u import-policies -f <file.json> -p AWSPROFILE `
 ### SCPs:
 
-#### Attach-SCPs: `orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE -m (true|false)`
-#### Validate-SCPs: `orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE -m (true|false)`
+#### Attach-SCPs: `orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE `
+#### Validate-SCPs: `orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE `
 ℹ️ Uses Access Analyzer policy validation to validates your SCPs against IAM [policy grammar](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html) and [best practices](https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html).
 
 ### Visualization:
-#### Visualize Organization with graphviz: `orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE -m (true|false)`
+#### Visualize Organization with graphviz: `orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE `
 
 ℹ️ Visualize Organization currently use [Graphviz](https://www.graphviz.org/download/) please install before using the function.
 
 ![Example Output](static/visualize-organization-example-graphviz.png)
 
-#### Visualize Organization with diagrams.net: `orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE -m (true|false)`
+#### Visualize Organization with diagrams.net: `orgtool.py -u visualize-organization-diagrams -f <file.json> -p AWSPROFILE `
 
 ℹ️  The tool will generate a organziations.csv file.
 Follow the guide to [import from CSV to draw.io diagrams](https://drawio-app.com/import-from-csv-to-drawio/)
