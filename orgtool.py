@@ -382,7 +382,7 @@ def export_policies(file,  org):
     print(f'Policies have been written to File: {file} 🗃.')
 
 
-def import_policies(file,  org):
+def import_policies(file,  org, exclude):
 
     logger.info(f'Import Json file: {file}')
     f = open(file, )
@@ -391,7 +391,7 @@ def import_policies(file,  org):
     print("\nImport-Policies:")
     print("\n\n⌛️ Check if SCPs to import.")
     key = 'Scps'
-    if key in alldata:
+    if key in alldata & key != exclude:
         currentscps = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='SERVICE_CONTROL_POLICY').get("Policies", [])}
         print("\nImport-SCPs:")
         for scp in tqdm(alldata['Scps']):
@@ -429,7 +429,7 @@ def import_policies(file,  org):
         print(" ℹ️ No SCPs to import.")
     print("\n\n⌛️ Check if Tag Policies to import.")
     key = 'Tags'
-    if key in alldata:
+    if key in alldata & key != exclude:
         currenttags = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='TAG_POLICY').get("Policies", [])}
         print("\nImport-Tag Policies:")
         for policy in tqdm(alldata['Tags']):
@@ -467,7 +467,7 @@ def import_policies(file,  org):
         print(" ℹ️  No Tag Policies to import.")
     print("\n\n⌛️ Check if Backup Policies to import.")
     key = 'Backup'
-    if key in alldata:
+    if key in alldata & key != exclude:
         currentbackup = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='BACKUP_POLICY').get("Policies", [])}
         print("\nImport Backup Policies:")
         for policy in tqdm(alldata['Backup']):
@@ -505,7 +505,7 @@ def import_policies(file,  org):
         print(" ℹ️  No Backup Policies to import.")
     print("\n\n⌛️ Check if AI services opt-out Policies to import.")
     key = 'AI'
-    if key in alldata:
+    if key in alldata & key != exclude:
         currentais = {policy["Name"]: policy["Id"] for policy in org.list_policies(Filter='AISERVICES_OPT_OUT_POLICY').get("Policies", [])}
         print("\nImport AI services opt-out Policies:")
         for policy in tqdm(alldata['AI']):
@@ -1020,7 +1020,7 @@ def main(argv):
     print('ORGTOOL for: \n exporting and importing AWS organizations structure and Policies to / from Json \n Visualize your Organization in diagrams.net or graphviz \n Validate your SCPs.')
     print('------------------------------------------------------------------------------')
     try:
-        opts,  args = getopt.getopt(argv, "hu:f:p:", ["u=", "f=", "p="])
+        opts,  args = getopt.getopt(argv, "hu:f:p:", ["u=", "f=", "p=",])
     except getopt.GetoptError:
         print('Usage:  ')
         print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
@@ -1037,7 +1037,7 @@ def main(argv):
             print('Export: orgtool.py -u export -f <file.json> -p AWSPROFILE')
             print('Export Policies: orgtool.py -u export-policies -f <file.json> -p AWSPROFILE')
             print('Import: orgtool.py -u import -f <file.json> -p AWSPROFILE')
-            print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE')
+            print('Import Policies: orgtool.py -u import-policies -f <file.json> -p AWSPROFILE -e EXCLUDE(*optional)')
             print('Validate SCPs: orgtool.py -u validate-scps -f <file.json> -p AWSPROFILE')
             print('Attach SCPs: orgtool.py -u attach-scps -f <file.json> -p AWSPROFILE')
             print('Visualize Organization: orgtool.py -u visualize-organization-graphviz -f <file.json> -p AWSPROFILE')
@@ -1055,7 +1055,10 @@ def main(argv):
             print(f'Profile {arg}')
             logger.info(f'Profile:{arg}')
             profile = arg
-
+        elif opt in ("-e",  "--exclude"):
+            print(f'Exclude {arg}')
+            logger.info(f'Exclude:{arg}')
+            exclude = arg
     session = boto3.Session(profile_name=profile)
     org = session.client('organizations')
     accessanalyzer = session.client('accessanalyzer')
@@ -1074,7 +1077,9 @@ def main(argv):
     elif usage == 'import-policies':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Import Policies from Json')
-        import_policies(file, org)
+        if exclude not in locals():
+            exclude = "NONE"
+        import_policies(file, org,exclude)
     elif usage == 'validate-scps':
         logger.info('---------------------------------------------------')
         logger.info('NEW REQUEST: Validate Scps from Json')
