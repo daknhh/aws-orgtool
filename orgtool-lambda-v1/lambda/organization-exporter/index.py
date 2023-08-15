@@ -20,25 +20,22 @@ def get_ou_stucture(parent_id,  org):
     ou_fivelevel = {}
     ou_sixlevel = {}
     ou_sevenlevel = {}
-    management_account_ou = {}
-
     print("\n************************")
     print("\nOrganization-Structure: ")
     print("%s" % (parent_id))
 
-    
-    accounts = get_accounts_for_ou(parent_id, org)
-    management_account_ou = {'Id': "management-account-ou", 'Name': "management-account", 'SCPs': "None", 'Tags': "None", 'Accounts': accounts['Accounts']}
-
     for page in page_iterator:
+        ous.setdefault('Ous',  [])
         for ou in page['OrganizationalUnits']:
             logger.info(f'Inititalize Dict for {ou}')
             tags = get_tagsforou(ou['Id'], org)
             accounts = get_accounts_for_ou(ou['Id'], org)
-            ous.setdefault('Ous',  []).append({'Id': ou['Id'], 'Name': ou['Name'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': {}})
+            ous['Ous'].append({'Id': ou['Id'], 'Name': ou['Name'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': {}})
     for idx,  ou in enumerate(ous['Ous']):
         page_iterator = paginator.paginate(ParentId=ou['Id'])
         logger.info(f'Check {ou} for Children')
+        ou_secondlevel.clear()
+        ou_secondlevel.setdefault('Children',  [])
         for page in page_iterator:
             scp = get_scpforou(ou['Id'], org)
             tags = get_tagsforou(ou['Id'], org)
@@ -50,12 +47,10 @@ def get_ou_stucture(parent_id,  org):
                 print(" - %s" % (ou['Name']))
                 for ou_2l in page['OrganizationalUnits']:
                     print(" - - %s" % (ou_2l['Name']))
-                    ou_secondlevel.setdefault('Children',  []).append({'Id': ou_2l['Id'], 'Name': ou_2l['Name'], 'SCP': scp, 'Tags': tags, 'Accounts': accounts, 'Children': {}})
+                    ou_secondlevel['Children'].append({'Id': ou_2l['Id'], 'Name': ou_2l['Name'], 'SCP': scp, 'Tags': tags, 'Accounts': accounts, 'Children': {}})
             ous['Ous'][idx] = {'Id': ou['Id'], 'Name': ou['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_secondlevel['Children']}
             if ou_secondlevel == 'No-Children':
                 ou_secondlevel = {}
-            else:
-                ou_secondlevel.clear()
 
             if ous['Ous'][idx]['Children'] == 'No-Children':
                 logger.info('No-Children')
@@ -66,6 +61,8 @@ def get_ou_stucture(parent_id,  org):
                     accounts = get_accounts_for_ou(ou3['Id'], org)
                     page_iterator2 = paginator.paginate(ParentId=ou3['Id'])
                     logger.info(f'Check {ou3} for Children')
+                    ou_thirdlevel.clear()
+                    ou_thirdlevel.setdefault('Children',  [])
                     for page in page_iterator2:
                         if page['OrganizationalUnits'] == []:
                             ou_thirdlevel = {'Children': 'No-Children'}
@@ -76,12 +73,10 @@ def get_ou_stucture(parent_id,  org):
                             print(" - - - %s" % (ou3['Name']))
                             for ou_3l in page['OrganizationalUnits']:
                                 print(" - - - - %s" % (ou_3l['Name']))
-                                ou_thirdlevel.setdefault('Children',  []).append({'Id': ou_3l['Id'], 'Name': ou_3l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
+                                ou_thirdlevel['Children'].append({'Id': ou_3l['Id'], 'Name': ou_3l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
                         ous['Ous'][idx]['Children'][idx2] = {'Id': ou3['Id'], 'Name': ou3['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_thirdlevel['Children']}
                         if ou_thirdlevel == {'Children': 'No-Children'}:
                             ou_thirdlevel = {}
-                        else:
-                            ou_thirdlevel.clear()
 
                         if ous['Ous'][idx]['Children'][idx2]['Children'] == 'No-Children':
                             logger.info('No-Children')
@@ -92,6 +87,8 @@ def get_ou_stucture(parent_id,  org):
                                 accounts = get_accounts_for_ou(ou4['Id'], org)
                                 page_iterator3 = paginator.paginate(ParentId=ou4['Id'])
                                 logger.info(f'Check {ou4} for Children')
+                                ou_fivelevel.clear()
+                                ou_fivelevel.setdefault('Children',  [])
                                 for page in page_iterator3:
                                     if page['OrganizationalUnits'] == []:
                                         ou_fivelevel = {'Children': 'No-Children'}
@@ -102,12 +99,10 @@ def get_ou_stucture(parent_id,  org):
                                         print(" - - - - - %s" % (ou4['Name']))
                                         for ou_4l in page['OrganizationalUnits']:
                                             print(" - - - - - - %s" % (ou_4l['Name']))
-                                            ou_fivelevel.setdefault('Children',  []).append({'Id': ou_4l['Id'], 'Name': ou_4l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
+                                            ou_fivelevel['Children'].append({'Id': ou_4l['Id'], 'Name': ou_4l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
                                     ous['Ous'][idx]['Children'][idx2]['Children'][idx3] = {'Id': ou4['Id'], 'Name': ou4['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_fivelevel['Children']}
                                     if ou_fivelevel == {'Children': 'No-Children'}:
                                         ou_fivelevel = {}
-                                    else:
-                                        ou_fivelevel.clear()
 
                                     if ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'] == 'No-Children':
                                         logger.info('No-Children')
@@ -118,6 +113,8 @@ def get_ou_stucture(parent_id,  org):
                                             accounts = get_accounts_for_ou(ou5['Id'], org)
                                             page_iterator4 = paginator.paginate(ParentId=ou5['Id'])
                                             logger.info(f'Check {ou5} for Children')
+                                            ou_sixlevel.clear()
+                                            ou_sixlevel.setdefault('Children',  [])
                                             for page in page_iterator4:
                                                 if page['OrganizationalUnits'] == []:
                                                     ou_sixlevel = {'Children': 'No-Children'}
@@ -128,12 +125,10 @@ def get_ou_stucture(parent_id,  org):
                                                     print(" - - - - - %s" % (ou5['Name']))
                                                     for ou_5l in page['OrganizationalUnits']:
                                                         print(" - - - - - - %s" % (ou_5l['Name']))
-                                                        ou_sixlevel.setdefault('Children',  []).append({'Id': ou_5l['Id'], 'Name': ou_5l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
+                                                        ou_sixlevel['Children'].append({'Id': ou_5l['Id'], 'Name': ou_5l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
                                                 ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4] = {'Id': ou5['Id'], 'Name': ou5['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_sixlevel['Children']}
                                                 if ou_sixlevel == {'Children': 'No-Children'}:
                                                     ou_sixlevel = {}
-                                                else:
-                                                    ou_sixlevel.clear()
                                             if ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children'] == 'No-Children':
                                                 logger.info('No-Children')
                                             else:
@@ -142,6 +137,8 @@ def get_ou_stucture(parent_id,  org):
                                                     tags = get_tagsforou(ou6['Id'], org)
                                                     accounts = get_accounts_for_ou(ou6['Id'], org)
                                                     page_iterator5 = paginator.paginate(ParentId=ou6['Id'])
+                                                    ou_sevenlevel.clear()
+                                                    ou_sevenlevel.setdefault('Children',  [])
                                                     logger.info(f'Check {ou6} for Children')
                                                     for page in page_iterator5:
                                                         if page['OrganizationalUnits'] == []:
@@ -153,16 +150,11 @@ def get_ou_stucture(parent_id,  org):
                                                             print(" - - - - - - %s" % (ou6['Name']))
                                                             for ou_6l in page['OrganizationalUnits']:
                                                                 print(" - - - - - - - %s" % (ou_6l['Name']))
-                                                                ou_sevenlevel.setdefault('Children',  []).append({'Id': ou_6l['Id'], 'Name': ou_6l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {'Children': 'No-Children'}})
+                                                                ou_sevenlevel['Children'].append({'Id': ou_6l['Id'], 'Name': ou_6l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {'Children': 'No-Children'}})
                                                         ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children'][idx5] = {'Id': ou6['Id'], 'Name': ou6['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_sevenlevel['Children']}
                                                         if ou_sevenlevel == {'Children': 'No-Children'}:
                                                             ou_sevenlevel = {}
-                                                        else:
-                                                            ou_sevenlevel.clear()
-    print(f"- Adding Management Account to export in fake management-account-ou")
-    ous['Ous'].append(management_account_ou)
     return ous
-
 
 def export_structure(file,  org, s3):
     root_id = org.list_roots()['Roots'][0]['Id']
@@ -205,13 +197,14 @@ def get_tagsforou(ressource_id, org):
 
 
 def get_accounts_for_ou(ou, org):
-    response = org.list_accounts_for_parent(
-        ParentId=ou)
+    paginator = org.get_paginator('list_accounts_for_parent')
+    page_iterator = paginator.paginate(ParentId=ou)
     accounts = {}
     accounts.setdefault('Accounts', [])
-    for account in response['Accounts']:
-        accounttags = get_tagsforou(account['Id'], org)
-        accounts.setdefault('Accounts', []).append({'Id': account['Id'], 'Tags': accounttags['Tags'],'Email': account['Email'], 'Name': account['Name']})
+    for page in page_iterator:
+        for account in page['Accounts']:
+            accounttags = get_tagsforou(account['Id'], org)
+            accounts['Accounts'].append({'Id': account['Id'], 'Tags': accounttags['Tags'],'Email': account['Email'], 'Name': account['Name']})
     return accounts
 
 
