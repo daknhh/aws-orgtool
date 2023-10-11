@@ -1,7 +1,6 @@
 import boto3
 import json
 import logging
-import sys
 import os
 
 FORMAT = '%(asctime)-15s %(message)s'
@@ -11,156 +10,43 @@ logger = logging.getLogger('oustructure')
 bucketname = os.environ['BUCKETNAME']
 objectname = os.environ['OBJECT']
 
-def get_ou_stucture(parent_id,  org):
+
+def get_organization_structure(parent_id, org, level=1):
     paginator = org.get_paginator('list_organizational_units_for_parent')
     page_iterator = paginator.paginate(ParentId=parent_id)
-    ous = {}
-    ou_secondlevel = {}
-    ou_thirdlevel = {}
-    ou_fivelevel = {}
-    ou_sixlevel = {}
-    ou_sevenlevel = {}
-    print("\n************************")
-    print("\nOrganization-Structure: ")
-    print("%s" % (parent_id))
-
+    print(f"\nOrganization-Structure (Level {level}): ")
+    print(f"{parent_id}")
+    if (level == 1):
+        ous = {'Ous': []}
+    else:
+        ous = []
     for page in page_iterator:
-        ous.setdefault('Ous',  [])
         for ou in page['OrganizationalUnits']:
-            logger.info(f'Inititalize Dict for {ou}')
-            tags = get_tagsforou(ou['Id'], org)
+            tags = get_tags_for_resource(ou['Id'], org)
             accounts = get_accounts_for_ou(ou['Id'], org)
-            ous['Ous'].append({'Id': ou['Id'], 'Name': ou['Name'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': {}})
-    for idx,  ou in enumerate(ous['Ous']):
-        page_iterator = paginator.paginate(ParentId=ou['Id'])
-        logger.info(f'Check {ou} for Children')
-        ou_secondlevel.clear()
-        ou_secondlevel.setdefault('Children',  [])
-        for page in page_iterator:
-            scp = get_scpforou(ou['Id'], org)
-            tags = get_tagsforou(ou['Id'], org)
-            accounts = get_accounts_for_ou(ou['Id'], org)
-            if page['OrganizationalUnits'] == []:
-                ou_secondlevel = {'Children': 'No-Children'}
-                print(" - %s" % (ou['Name']))
+            scps = get_scpforou(ou['Id'], org)['SCPs']
+            children = get_organization_structure(ou['Id'], org, level+1)
+            if (children == [] or children == {'Ous': []}):
+                children = "No-Children"
+            ou_structure = {
+                'Id': ou['Id'],
+                'Name': ou['Name'],
+                'Tags': tags['Tags'],
+                'SCPs': scps,
+                'Accounts': accounts['Accounts'],
+                'Children': children
+            }
+            if (level == 1):
+                ous['Ous'].append(ou_structure)
             else:
-                print(" - %s" % (ou['Name']))
-                for ou_2l in page['OrganizationalUnits']:
-                    print(" - - %s" % (ou_2l['Name']))
-                    ou_secondlevel['Children'].append({'Id': ou_2l['Id'], 'Name': ou_2l['Name'], 'SCP': scp, 'Tags': tags, 'Accounts': accounts, 'Children': {}})
-            ous['Ous'][idx] = {'Id': ou['Id'], 'Name': ou['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_secondlevel['Children']}
-            if ou_secondlevel == 'No-Children':
-                ou_secondlevel = {}
-
-            if ous['Ous'][idx]['Children'] == 'No-Children':
-                logger.info('No-Children')
-            else:
-                for idx2,  ou3 in enumerate(ous['Ous'][idx]['Children']):
-                    scp = get_scpforou(ou3['Id'], org)
-                    tags = get_tagsforou(ou3['Id'], org)
-                    accounts = get_accounts_for_ou(ou3['Id'], org)
-                    page_iterator2 = paginator.paginate(ParentId=ou3['Id'])
-                    logger.info(f'Check {ou3} for Children')
-                    ou_thirdlevel.clear()
-                    ou_thirdlevel.setdefault('Children',  [])
-                    for page in page_iterator2:
-                        if page['OrganizationalUnits'] == []:
-                            ou_thirdlevel = {'Children': 'No-Children'}
-                            logger.info('No-Children')
-                            print(" - - - %s" % (ou3['Name']))
-                        else:
-                            logger.info(page['OrganizationalUnits'])
-                            print(" - - - %s" % (ou3['Name']))
-                            for ou_3l in page['OrganizationalUnits']:
-                                print(" - - - - %s" % (ou_3l['Name']))
-                                ou_thirdlevel['Children'].append({'Id': ou_3l['Id'], 'Name': ou_3l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
-                        ous['Ous'][idx]['Children'][idx2] = {'Id': ou3['Id'], 'Name': ou3['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_thirdlevel['Children']}
-                        if ou_thirdlevel == {'Children': 'No-Children'}:
-                            ou_thirdlevel = {}
-
-                        if ous['Ous'][idx]['Children'][idx2]['Children'] == 'No-Children':
-                            logger.info('No-Children')
-                        else:
-                            for idx3,  ou4 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children']):
-                                scp = get_scpforou(ou4['Id'], org)
-                                tags = get_tagsforou(ou4['Id'], org)
-                                accounts = get_accounts_for_ou(ou4['Id'], org)
-                                page_iterator3 = paginator.paginate(ParentId=ou4['Id'])
-                                logger.info(f'Check {ou4} for Children')
-                                ou_fivelevel.clear()
-                                ou_fivelevel.setdefault('Children',  [])
-                                for page in page_iterator3:
-                                    if page['OrganizationalUnits'] == []:
-                                        ou_fivelevel = {'Children': 'No-Children'}
-                                        logger.info('No-Children')
-                                        print(" - - - - - %s" % (ou4['Name']))
-                                    else:
-                                        logger.info(page['OrganizationalUnits'])
-                                        print(" - - - - - %s" % (ou4['Name']))
-                                        for ou_4l in page['OrganizationalUnits']:
-                                            print(" - - - - - - %s" % (ou_4l['Name']))
-                                            ou_fivelevel['Children'].append({'Id': ou_4l['Id'], 'Name': ou_4l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
-                                    ous['Ous'][idx]['Children'][idx2]['Children'][idx3] = {'Id': ou4['Id'], 'Name': ou4['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_fivelevel['Children']}
-                                    if ou_fivelevel == {'Children': 'No-Children'}:
-                                        ou_fivelevel = {}
-
-                                    if ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'] == 'No-Children':
-                                        logger.info('No-Children')
-                                    else:
-                                        for idx4,  ou5 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children']):
-                                            scp = get_scpforou(ou5['Id'], org)
-                                            tags = get_tagsforou(ou5['Id'], org)
-                                            accounts = get_accounts_for_ou(ou5['Id'], org)
-                                            page_iterator4 = paginator.paginate(ParentId=ou5['Id'])
-                                            logger.info(f'Check {ou5} for Children')
-                                            ou_sixlevel.clear()
-                                            ou_sixlevel.setdefault('Children',  [])
-                                            for page in page_iterator4:
-                                                if page['OrganizationalUnits'] == []:
-                                                    ou_sixlevel = {'Children': 'No-Children'}
-                                                    logger.info('No-Children')
-                                                    print(" - - - - - %s" % (ou5['Name']))
-                                                else:
-                                                    logger.info(page['OrganizationalUnits'])
-                                                    print(" - - - - - %s" % (ou5['Name']))
-                                                    for ou_5l in page['OrganizationalUnits']:
-                                                        print(" - - - - - - %s" % (ou_5l['Name']))
-                                                        ou_sixlevel['Children'].append({'Id': ou_5l['Id'], 'Name': ou_5l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {}})
-                                                ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4] = {'Id': ou5['Id'], 'Name': ou5['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_sixlevel['Children']}
-                                                if ou_sixlevel == {'Children': 'No-Children'}:
-                                                    ou_sixlevel = {}
-                                            if ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children'] == 'No-Children':
-                                                logger.info('No-Children')
-                                            else:
-                                                for idx5,  ou6 in enumerate(ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children']):
-                                                    scp = get_scpforou(ou6['Id'], org)
-                                                    tags = get_tagsforou(ou6['Id'], org)
-                                                    accounts = get_accounts_for_ou(ou6['Id'], org)
-                                                    page_iterator5 = paginator.paginate(ParentId=ou6['Id'])
-                                                    ou_sevenlevel.clear()
-                                                    ou_sevenlevel.setdefault('Children',  [])
-                                                    logger.info(f'Check {ou6} for Children')
-                                                    for page in page_iterator5:
-                                                        if page['OrganizationalUnits'] == []:
-                                                            ou_sevenlevel = {'Children': 'No-Children'}
-                                                            logger.info('No-Children')
-                                                            print(" - - - - - - %s" % (ou6['Name']))
-                                                        else:
-                                                            logger.info(page['OrganizationalUnits'])
-                                                            print(" - - - - - - %s" % (ou6['Name']))
-                                                            for ou_6l in page['OrganizationalUnits']:
-                                                                print(" - - - - - - - %s" % (ou_6l['Name']))
-                                                                ou_sevenlevel['Children'].append({'Id': ou_6l['Id'], 'Name': ou_6l['Name'], 'Tags': tags, 'Accounts': accounts, 'Children': {'Children': 'No-Children'}})
-                                                        ous['Ous'][idx]['Children'][idx2]['Children'][idx3]['Children'][idx4]['Children'][idx5] = {'Id': ou6['Id'], 'Name': ou6['Name'], 'SCPs': scp['SCPs'], 'Tags': tags['Tags'], 'Accounts': accounts['Accounts'], 'Children': ou_sevenlevel['Children']}
-                                                        if ou_sevenlevel == {'Children': 'No-Children'}:
-                                                            ou_sevenlevel = {}
+                ous.append(ou_structure)
     return ous
+
 
 def export_structure(file,  org, s3):
     root_id = org.list_roots()['Roots'][0]['Id']
     logger.info('Query first level OUs')
-    ous = get_ou_stucture(root_id, org)
-
+    ous = get_organization_structure(root_id, org)
     print("\n************************")
     s3.put_object(
         Body=json.dumps(ous),
@@ -186,7 +72,7 @@ def get_scpforou(ou_id,  org):
     return scp
 
 
-def get_tagsforou(ressource_id, org):
+def get_tags_for_resource(ressource_id, org):
     response = org.list_tags_for_resource(
         ResourceId=ressource_id)
     tags = {}
@@ -203,8 +89,13 @@ def get_accounts_for_ou(ou, org):
     accounts.setdefault('Accounts', [])
     for page in page_iterator:
         for account in page['Accounts']:
-            accounttags = get_tagsforou(account['Id'], org)
-            accounts['Accounts'].append({'Id': account['Id'], 'Tags': accounttags['Tags'],'Email': account['Email'], 'Name': account['Name']})
+            accounttags = get_tags_for_resource(account['Id'], org)
+            accounts['Accounts'].append({
+                'Id': account['Id'],
+                'Tags': accounttags['Tags'],
+                'Email': account['Email'],
+                'Name': account['Name'],
+            })
     return accounts
 
 
@@ -219,11 +110,13 @@ def get_ou_id_by_name(name,  parent_id,  org):
                 if value == search_key:
                     res = ou['Id']
                     logger.info(f'Got OuID: {res}')
-    return(res)
+    return (res)
 
 # ------------------------------------------------------------------------------
 # lambda_handler
 # ------------------------------------------------------------------------------
+
+
 def lambda_handler(event, context):
     session = boto3.Session()
     org = session.client('organizations')
